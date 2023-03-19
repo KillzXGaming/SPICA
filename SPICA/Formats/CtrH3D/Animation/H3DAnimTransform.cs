@@ -22,33 +22,35 @@ namespace SPICA.Formats.CtrH3D.Animation
         [Ignore] private H3DFloatKeyFrameGroup _TranslationY;
         [Ignore] private H3DFloatKeyFrameGroup _TranslationZ;
 
-        public H3DFloatKeyFrameGroup ScaleX       => _ScaleX;
-        public H3DFloatKeyFrameGroup ScaleY       => _ScaleY;
-        public H3DFloatKeyFrameGroup ScaleZ       => _ScaleZ;
+        public H3DFloatKeyFrameGroup ScaleX => _ScaleX;
+        public H3DFloatKeyFrameGroup ScaleY => _ScaleY;
+        public H3DFloatKeyFrameGroup ScaleZ => _ScaleZ;
 
-        public H3DFloatKeyFrameGroup RotationX    => _RotationX;
-        public H3DFloatKeyFrameGroup RotationY    => _RotationY;
-        public H3DFloatKeyFrameGroup RotationZ    => _RotationZ;
+        public H3DFloatKeyFrameGroup RotationX => _RotationX;
+        public H3DFloatKeyFrameGroup RotationY => _RotationY;
+        public H3DFloatKeyFrameGroup RotationZ => _RotationZ;
 
         public H3DFloatKeyFrameGroup TranslationX => _TranslationX;
         public H3DFloatKeyFrameGroup TranslationY => _TranslationY;
         public H3DFloatKeyFrameGroup TranslationZ => _TranslationZ;
 
-        public bool ScaleExists       => _ScaleX.Exists       || _ScaleY.Exists       || _ScaleZ.Exists;
+        public bool ScaleExists => _ScaleX.Exists || _ScaleY.Exists || _ScaleZ.Exists;
 
-        public bool RotationExists    => _RotationX.Exists    || _RotationY.Exists    || _RotationZ.Exists;
+        public bool RotationExists => _RotationX.Exists || _RotationY.Exists || _RotationZ.Exists;
 
         public bool TranslationExists => _TranslationX.Exists || _TranslationY.Exists || _TranslationZ.Exists;
 
+        public bool Exists => ScaleExists || RotationExists || TranslationExists;
+
         public H3DAnimTransform()
         {
-            _ScaleX       = new H3DFloatKeyFrameGroup();
-            _ScaleY       = new H3DFloatKeyFrameGroup();
-            _ScaleZ       = new H3DFloatKeyFrameGroup();
+            _ScaleX = new H3DFloatKeyFrameGroup();
+            _ScaleY = new H3DFloatKeyFrameGroup();
+            _ScaleZ = new H3DFloatKeyFrameGroup();
 
-            _RotationX    = new H3DFloatKeyFrameGroup();
-            _RotationY    = new H3DFloatKeyFrameGroup();
-            _RotationZ    = new H3DFloatKeyFrameGroup();
+            _RotationX = new H3DFloatKeyFrameGroup();
+            _RotationY = new H3DFloatKeyFrameGroup();
+            _RotationZ = new H3DFloatKeyFrameGroup();
 
             _TranslationX = new H3DFloatKeyFrameGroup();
             _TranslationY = new H3DFloatKeyFrameGroup();
@@ -69,7 +71,7 @@ namespace SPICA.Formats.CtrH3D.Animation
                 Position += 4;
 
                 bool Constant = ((uint)Flags & ConstantMask) != 0;
-                bool Exists   = ((uint)Flags & NotExistMask) == 0;
+                bool Exists = ((uint)Flags & NotExistMask) == 0;
 
                 if (Exists)
                 {
@@ -77,13 +79,13 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                     switch (ElemIndex)
                     {
-                        case 0: _ScaleX       = FrameGrp; break;
-                        case 1: _ScaleY       = FrameGrp; break;
-                        case 2: _ScaleZ       = FrameGrp; break;
+                        case 0: _ScaleX = FrameGrp; break;
+                        case 1: _ScaleY = FrameGrp; break;
+                        case 2: _ScaleZ = FrameGrp; break;
 
-                        case 3: _RotationX    = FrameGrp; break;
-                        case 4: _RotationY    = FrameGrp; break;
-                        case 5: _RotationZ    = FrameGrp; break;
+                        case 3: _RotationX = FrameGrp; break;
+                        case 4: _RotationY = FrameGrp; break;
+                        case 5: _RotationZ = FrameGrp; break;
 
                         case 6: _TranslationX = FrameGrp; break;
                         case 7: _TranslationY = FrameGrp; break;
@@ -93,7 +95,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                 ConstantMask <<= 1;
                 NotExistMask <<= 1;
-                
+
                 if (ConstantMask == (uint)H3DAnimTransformFlags.IsRotationWConstant)
                 {
                     ConstantMask <<= 1;
@@ -118,13 +120,13 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                 switch (ElemIndex)
                 {
-                    case 0: FrameGrp = _ScaleX;       break;
-                    case 1: FrameGrp = _ScaleY;       break;
-                    case 2: FrameGrp = _ScaleZ;       break;
+                    case 0: FrameGrp = _ScaleX; break;
+                    case 1: FrameGrp = _ScaleY; break;
+                    case 2: FrameGrp = _ScaleZ; break;
 
-                    case 3: FrameGrp = _RotationX;    break;
-                    case 4: FrameGrp = _RotationY;    break;
-                    case 5: FrameGrp = _RotationZ;    break;
+                    case 3: FrameGrp = _RotationX; break;
+                    case 4: FrameGrp = _RotationY; break;
+                    case 5: FrameGrp = _RotationZ; break;
 
                     case 6: FrameGrp = _TranslationX; break;
                     case 7: FrameGrp = _TranslationY; break;
@@ -143,7 +145,7 @@ namespace SPICA.Formats.CtrH3D.Animation
                     {
                         Serializer.Sections[(uint)H3DSectionId.Contents].Values.Add(new RefValue()
                         {
-                            Value    = FrameGrp,
+                            Value = FrameGrp,
                             Position = Serializer.BaseStream.Position
                         });
                     }
@@ -157,7 +159,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                 ConstantMask <<= 1;
                 NotExistMask <<= 1;
-                
+
                 if (ConstantMask == (uint)H3DAnimTransformFlags.IsRotationWConstant)
                 {
                     ConstantMask <<= 1;

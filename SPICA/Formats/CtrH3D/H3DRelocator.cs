@@ -8,17 +8,17 @@ namespace SPICA.Formats.CtrH3D
 {
     class H3DRelocator
     {
-        private Stream       BaseStream;
+        private Stream BaseStream;
         private BinaryReader Reader;
         private BinaryWriter Writer;
-        private H3DHeader    Header;
+        private H3DHeader Header;
 
         private const string PointerTooBigEx = "Pointer address {0:X8} doesn't fit on 25-bits space!";
 
         public H3DRelocator(Stream BaseStream, H3DHeader Header)
         {
             this.BaseStream = BaseStream;
-            this.Header     = Header;
+            this.Header = Header;
 
             Reader = new BinaryReader(BaseStream);
             Writer = new BinaryWriter(BaseStream);
@@ -52,20 +52,20 @@ namespace SPICA.Formats.CtrH3D
         {
             switch (Section)
             {
-                case H3DSection.Contents:       return (uint)Header.ContentsAddress;
-                case H3DSection.Strings:        return (uint)Header.StringsAddress;
-                case H3DSection.Commands:       return (uint)Header.CommandsAddress;
-                case H3DSection.CommandsSrc:    return (uint)Header.CommandsAddress;
-                case H3DSection.RawData:        return (uint)Header.RawDataAddress;
+                case H3DSection.Contents: return (uint)Header.ContentsAddress;
+                case H3DSection.Strings: return (uint)Header.StringsAddress;
+                case H3DSection.Commands: return (uint)Header.CommandsAddress;
+                case H3DSection.CommandsSrc: return (uint)Header.CommandsAddress;
+                case H3DSection.RawData: return (uint)Header.RawDataAddress;
                 case H3DSection.RawDataTexture: return (uint)Header.RawDataAddress;
-                case H3DSection.RawDataVertex:  return (uint)Header.RawDataAddress;
+                case H3DSection.RawDataVertex: return (uint)Header.RawDataAddress;
                 case H3DSection.RawDataIndex16: return (uint)Header.RawDataAddress | (1u << 31);
-                case H3DSection.RawDataIndex8:  return (uint)Header.RawDataAddress;
-                case H3DSection.RawExt:         return (uint)Header.RawExtAddress;
-                case H3DSection.RawExtTexture:  return (uint)Header.RawExtAddress;
-                case H3DSection.RawExtVertex:   return (uint)Header.RawExtAddress;
-                case H3DSection.RawExtIndex16:  return (uint)Header.RawExtAddress | (1u << 31);
-                case H3DSection.RawExtIndex8:   return (uint)Header.RawExtAddress;
+                case H3DSection.RawDataIndex8: return (uint)Header.RawDataAddress;
+                case H3DSection.RawExt: return (uint)Header.RawExtAddress;
+                case H3DSection.RawExtTexture: return (uint)Header.RawExtAddress;
+                case H3DSection.RawExtVertex: return (uint)Header.RawExtAddress;
+                case H3DSection.RawExtIndex16: return (uint)Header.RawExtAddress | (1u << 31);
+                case H3DSection.RawExtIndex8: return (uint)Header.RawExtAddress;
             }
 
             return 0;
@@ -112,7 +112,7 @@ namespace SPICA.Formats.CtrH3D
 
                 uint Flags;
 
-                Flags  = (uint)Target;
+                Flags = (uint)Target;
                 Flags |= (uint)Source << 4;
 
                 CheckPtrOvr(PointerAddress);
@@ -133,7 +133,7 @@ namespace SPICA.Formats.CtrH3D
 
         public static void AddCmdReloc(BinarySerializer Serializer, H3DSection Target, long Pointer)
         {
-            Section Commands   = Serializer.Sections[(uint)H3DSectionId.Commands];
+            Section Commands = Serializer.Sections[(uint)H3DSectionId.Commands];
             Section Relocation = Serializer.Sections[(uint)H3DSectionId.Relocation];
 
             uint PointerAddress = (uint)(Pointer - Commands.Position) >> 2;
@@ -142,7 +142,7 @@ namespace SPICA.Formats.CtrH3D
 
             uint Flags;
 
-            Flags  = (uint)Target;
+            Flags = (uint)Target;
             Flags |= (uint)H3DSection.Commands << 4;
 
             CheckPtrOvr(PointerAddress);
@@ -185,15 +185,15 @@ namespace SPICA.Formats.CtrH3D
 
         private H3DSection GetRelocation(long Position)
         {
-            if      (InRange(Position, Header.ContentsAddress, Header.ContentsLength))
+            if (InRange(Position, Header.ContentsAddress, Header.ContentsLength))
                 return H3DSection.Contents;
-            else if (InRange(Position, Header.StringsAddress,  Header.StringsLength))
+            else if (InRange(Position, Header.StringsAddress, Header.StringsLength))
                 return H3DSection.Strings;
             else if (InRange(Position, Header.CommandsAddress, Header.CommandsLength))
                 return H3DSection.Commands;
-            else if (InRange(Position, Header.RawDataAddress,  Header.RawDataLength))
+            else if (InRange(Position, Header.RawDataAddress, Header.RawDataLength))
                 return H3DSection.RawData;
-            else if (InRange(Position, Header.RawExtAddress,   Header.RawExtLength))
+            else if (InRange(Position, Header.RawExtAddress, Header.RawExtLength))
                 return H3DSection.RawExt;
             else
                 throw new ArgumentOutOfRangeException();
@@ -204,10 +204,10 @@ namespace SPICA.Formats.CtrH3D
             switch (Relocation)
             {
                 case H3DSection.Contents: return (uint)(Position - Header.ContentsAddress);
-                case H3DSection.Strings:  return (uint)(Position - Header.StringsAddress);
+                case H3DSection.Strings: return (uint)(Position - Header.StringsAddress);
                 case H3DSection.Commands: return (uint)(Position - Header.CommandsAddress);
-                case H3DSection.RawData:  return (uint)(Position - Header.RawDataAddress);
-                case H3DSection.RawExt:   return (uint)(Position - Header.RawExtAddress);
+                case H3DSection.RawData: return (uint)(Position - Header.RawDataAddress);
+                case H3DSection.RawExt: return (uint)(Position - Header.RawExtAddress);
             }
 
             return (uint)Position;

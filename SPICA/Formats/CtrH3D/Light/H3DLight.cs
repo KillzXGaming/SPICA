@@ -50,16 +50,16 @@ namespace SPICA.Formats.CtrH3D.Light
 
         [Inline]
         [TypeChoiceName("Type")]
-        [TypeChoice((uint)H3DLightType.Hemisphere,    typeof(H3DHemisphereLight))]
-        [TypeChoice((uint)H3DLightType.Ambient,       typeof(H3DAmbientLight))]
-        [TypeChoice((uint)H3DLightType.Vertex,        typeof(H3DVertexLight))]
-        [TypeChoice((uint)H3DLightType.VertexDir,     typeof(H3DVertexLight))]
-        [TypeChoice((uint)H3DLightType.VertexPoint,   typeof(H3DVertexLight))]
-        [TypeChoice((uint)H3DLightType.VertexSpot,    typeof(H3DVertexLight))]
-        [TypeChoice((uint)H3DLightType.Fragment,      typeof(H3DFragmentLight))]
-        [TypeChoice((uint)H3DLightType.FragmentDir,   typeof(H3DFragmentLight))]
+        [TypeChoice((uint)H3DLightType.Hemisphere, typeof(H3DHemisphereLight))]
+        [TypeChoice((uint)H3DLightType.Ambient, typeof(H3DAmbientLight))]
+        [TypeChoice((uint)H3DLightType.Vertex, typeof(H3DVertexLight))]
+        [TypeChoice((uint)H3DLightType.VertexDir, typeof(H3DVertexLight))]
+        [TypeChoice((uint)H3DLightType.VertexPoint, typeof(H3DVertexLight))]
+        [TypeChoice((uint)H3DLightType.VertexSpot, typeof(H3DVertexLight))]
+        [TypeChoice((uint)H3DLightType.Fragment, typeof(H3DFragmentLight))]
+        [TypeChoice((uint)H3DLightType.FragmentDir, typeof(H3DFragmentLight))]
         [TypeChoice((uint)H3DLightType.FragmentPoint, typeof(H3DFragmentLight))]
-        [TypeChoice((uint)H3DLightType.FragmentSpot,  typeof(H3DFragmentLight))]
+        [TypeChoice((uint)H3DLightType.FragmentSpot, typeof(H3DFragmentLight))]
         public object Content;
     }
 }

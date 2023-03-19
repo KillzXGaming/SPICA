@@ -16,7 +16,7 @@ namespace SPICA.Formats.CtrH3D.Animation
             Name = Anim.Name;
 
             AnimationFlags = Anim.AnimationFlags;
-            AnimationType  = Anim.AnimationType;
+            AnimationType = Anim.AnimationType;
 
             CurvesCount = Anim.CurvesCount;
 

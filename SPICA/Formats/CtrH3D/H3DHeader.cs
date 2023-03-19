@@ -35,7 +35,9 @@ namespace SPICA.Formats.CtrH3D
         public int RelocationLength;
 
         public int UnInitDataLength;
+#pragma warning disable CS0649 // Le champ 'H3DHeader.UnInitCommandsLength' n'est jamais assigné et aura toujours sa valeur par défaut 0
         public int UnInitCommandsLength;
+#pragma warning restore CS0649 // Le champ 'H3DHeader.UnInitCommandsLength' n'est jamais assigné et aura toujours sa valeur par défaut 0
 
         [IfVersion(CmpOp.Gequal, 8), Padding(2)] public H3DFlags Flags;
 

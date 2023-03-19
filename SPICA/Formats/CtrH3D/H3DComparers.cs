@@ -24,12 +24,12 @@ namespace SPICA.Formats.CtrH3D
 
         public static int CompareBuffer(RefValue LHS, RefValue RHS)
         {
-            if      (LHS.Parent == RHS.Parent)
-                return  0;
+            if (LHS.Parent == RHS.Parent)
+                return 0;
             else if (LHS.Parent is H3DTexture)
                 return -1;
             else
-                return  1;
+                return 1;
         }
 
         public static int CompareString(string LHS, string RHS)
@@ -44,12 +44,12 @@ namespace SPICA.Formats.CtrH3D
                 if (L != R) return L < R ? -1 : 1;
             }
 
-            if      (LHS.Length == RHS.Length)
-                return  0;
-            else if (LHS.Length <  RHS.Length)
+            if (LHS.Length == RHS.Length)
+                return 0;
+            else if (LHS.Length < RHS.Length)
                 return -1;
             else
-                return  1;
+                return 1;
         }
     }
 }

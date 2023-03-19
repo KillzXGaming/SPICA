@@ -6,8 +6,8 @@ namespace SPICA.Formats.CtrH3D
 {
     public struct H3DBoundingBox
     {
-        public Vector3   Center;
+        public Vector3 Center;
         public Matrix3x3 Orientation;
-        public Vector3   Size;
+        public Vector3 Size;
     }
 }

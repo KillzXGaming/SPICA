@@ -82,9 +82,9 @@ namespace SPICA.Formats.CtrH3D
             {
                 Serializer.Sections[(uint)H3DSectionId.Contents].Values.Add(new RefValue()
                 {
-                    Parent        = this,
-                    Position      = Serializer.BaseStream.Position + 4,
-                    Value         = GetFixedValueBuffer(),
+                    Parent = this,
+                    Position = Serializer.BaseStream.Position + 4,
+                    Value = GetFixedValueBuffer(),
                     PointerOffset = 0
                 });
             }
@@ -92,9 +92,9 @@ namespace SPICA.Formats.CtrH3D
             {
                 Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
                 {
-                    Parent        = this,
-                    Position      = Serializer.BaseStream.Position + 4,
-                    Value         = RawBuffer,
+                    Parent = this,
+                    Position = Serializer.BaseStream.Position + 4,
+                    Value = RawBuffer,
                     PointerOffset = (uint)_Offset
                 });
             }
@@ -110,9 +110,9 @@ namespace SPICA.Formats.CtrH3D
             {
                 switch (Format)
                 {
-                    case PICAAttributeFormat.Byte:  v[i] = Reader.ReadSByte();  break;
-                    case PICAAttributeFormat.Ubyte: v[i] = Reader.ReadByte();   break;
-                    case PICAAttributeFormat.Short: v[i] = Reader.ReadInt16();  break;
+                    case PICAAttributeFormat.Byte: v[i] = Reader.ReadSByte(); break;
+                    case PICAAttributeFormat.Ubyte: v[i] = Reader.ReadByte(); break;
+                    case PICAAttributeFormat.Short: v[i] = Reader.ReadInt16(); break;
                     case PICAAttributeFormat.Float: v[i] = Reader.ReadSingle(); break;
                 }
             }
@@ -134,10 +134,10 @@ namespace SPICA.Formats.CtrH3D
                 {
                     switch (Format)
                     {
-                        case PICAAttributeFormat.Byte:  Writer.Write((sbyte)v[i]); break;
-                        case PICAAttributeFormat.Ubyte: Writer.Write((byte)v[i]);  break;
+                        case PICAAttributeFormat.Byte: Writer.Write((sbyte)v[i]); break;
+                        case PICAAttributeFormat.Ubyte: Writer.Write((byte)v[i]); break;
                         case PICAAttributeFormat.Short: Writer.Write((short)v[i]); break;
-                        case PICAAttributeFormat.Float: Writer.Write(v[i]);        break;
+                        case PICAAttributeFormat.Float: Writer.Write(v[i]); break;
                     }
                 }
 

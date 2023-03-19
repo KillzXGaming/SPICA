@@ -10,7 +10,7 @@ namespace SPICA.Formats.CtrH3D
     [Inline]
     public class H3DDict<T> : IPatriciaDict<T> where T : INamed
     {
-        private List<T>         Values;
+        private List<T> Values;
         private H3DPatriciaTree NameTree;
 
         public T this[int Index]
@@ -33,7 +33,7 @@ namespace SPICA.Formats.CtrH3D
 
         public H3DDict()
         {
-            Values   = new List<T>();
+            Values = new List<T>();
             NameTree = new H3DPatriciaTree();
         }
 

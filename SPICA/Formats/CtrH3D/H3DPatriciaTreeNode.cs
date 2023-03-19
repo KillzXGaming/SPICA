@@ -4,7 +4,7 @@ namespace SPICA.Formats.CtrH3D
 {
     public struct H3DPatriciaTreeNode : IPatriciaTreeNode
     {
-        private uint   _ReferenceBit;
+        private uint _ReferenceBit;
         private ushort _LeftNodeIndex;
         private ushort _RightNodeIndex;
         private string _Name;

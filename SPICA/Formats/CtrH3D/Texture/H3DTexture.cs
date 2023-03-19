@@ -7,8 +7,8 @@ using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System;
+using System.Drawing;
 using System.IO;
-using System.Linq;
 
 namespace SPICA.Formats.CtrH3D.Texture
 {
@@ -56,13 +56,91 @@ namespace SPICA.Formats.CtrH3D.Texture
 
         public H3DTexture() { }
 
+        public H3DTexture(string FileName, bool withoutExtension = false, Nullable<PICATextureFormat> desiredFormat = null)
+        {
+            Bitmap Img = new Bitmap(FileName);
+
+            using (Img)
+            {
+                Name = withoutExtension ? Path.GetFileNameWithoutExtension(FileName) : Path.GetFileName(FileName);
+
+                if (desiredFormat == null)
+                {
+                    Format = Image.IsAlphaPixelFormat(Img.PixelFormat) ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
+                }
+                else
+                {
+                    Format = (PICATextureFormat)desiredFormat;
+                }
+
+                if (Format == PICATextureFormat.ETC1A4)
+                {
+                    bool HasAlpha = false;
+                    //check if the alpha is actually used
+                    for (int x = 0; x < Img.Width; x++)
+                    {
+                        for (int y = 0; y < Img.Height; y++)
+                        {
+                            if (Img.GetPixel(x, y).A != 255)
+                            {
+                                HasAlpha = true;
+                                goto ApplyAlpha;
+                            }
+                        }
+                    }
+
+                ApplyAlpha:
+                    Format = HasAlpha ? PICATextureFormat.ETC1A4 : PICATextureFormat.ETC1;
+                }
+
+                if (FileName.Contains("rgba"))
+                {
+                    Format = PICATextureFormat.RGBA8;
+                }
+
+                H3DTextureImpl(Img);
+            }
+        }
+
+        public H3DTexture(string Name, Bitmap Img, PICATextureFormat Format = 0)
+        {
+            this.Name = Name;
+            this.Format = Format;
+
+            H3DTextureImpl(Img);
+        }
+
+        private void H3DTextureImpl(Bitmap Img)
+        {
+            MipmapSize = 1;
+
+            Width = (int)BitUtils.Pow2RoundDown((uint)Img.Width);
+            Height = (int)BitUtils.Pow2RoundDown((uint)Img.Height);
+
+            if (Img.Width != Width ||
+                Img.Height != Height)
+            {
+                /*
+                 * 3DS GPU only accepts textures with power of 2 sizes.
+                 * If the texture doesn't have a power of 2 size, we need to resize it then.
+                 */
+                using (Bitmap NewImg = new Bitmap(Img, Width, Height))
+                {
+                    RawBufferXPos = TextureConverter.Encode(NewImg, Format);
+                }
+            }
+            else
+            {
+                RawBufferXPos = TextureConverter.Encode(Img, Format);
+            }
+        }
 
         public byte[] ToRGBA(int Face = 0)
         {
             return TextureConverter.DecodeBuffer(BufferFromFace(Face), Width, Height, Format);
         }
 
-        public System.Drawing.Bitmap ToBitmap(int Face = 0)
+        public Bitmap ToBitmap(int Face = 0)
         {
             return TextureConverter.DecodeBitmap(BufferFromFace(Face), Width, Height, Format);
         }

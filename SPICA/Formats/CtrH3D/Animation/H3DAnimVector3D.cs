@@ -11,6 +11,8 @@ namespace SPICA.Formats.CtrH3D.Animation
         public H3DFloatKeyFrameGroup Y => Vector[1];
         public H3DFloatKeyFrameGroup Z => Vector[2];
 
+        public bool Exists => X.Exists || Y.Exists || Z.Exists;
+
         public H3DAnimVector3D()
         {
             Vector = new H3DFloatKeyFrameGroup[]

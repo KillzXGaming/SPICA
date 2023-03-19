@@ -7,12 +7,13 @@ using SPICA.Serialization.Attributes;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SPICA.Formats.CtrH3D.Model
 {
-    public class H3DModel : INamed
+    public class H3DModel : INamed, ICustomSerialization
     {
-        public H3DModelFlags  Flags;
+        public H3DModelFlags Flags;
         public H3DBoneScaling BoneScaling;
 
         public ushort SilhouetteMaterialsCount;
@@ -46,7 +47,9 @@ namespace SPICA.Formats.CtrH3D.Model
 
         public H3DPatriciaTree MeshNodesTree;
 
+#pragma warning disable CS0414 // Le champ 'H3DModel.UserDefinedAddress' est assigné, mais sa valeur n'est jamais utilisée
         private uint UserDefinedAddress;
+#pragma warning restore CS0414 // Le champ 'H3DModel.UserDefinedAddress' est assigné, mais sa valeur n'est jamais utilisée
 
         public H3DMetaData MetaData;
 
@@ -75,7 +78,7 @@ namespace SPICA.Formats.CtrH3D.Model
 
         public void AddMesh(H3DMesh Mesh)
         {
-            Mesh.Parent= this;
+            Mesh.Parent = this;
 
             Meshes.Add(Mesh);
 
@@ -119,6 +122,32 @@ namespace SPICA.Formats.CtrH3D.Model
             MeshesLayer1.Clear();
             MeshesLayer2.Clear();
             MeshesLayer3.Clear();
+        }
+
+        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
+        {
+        }
+
+        bool ICustomSerialization.Serialize(BinarySerializer Serializer)
+        {
+            int LastRenderLayer = 0;
+            foreach (H3DMesh Mesh in Meshes)
+            {
+                if (Mesh.Layer > LastRenderLayer)
+                {
+                    LastRenderLayer = Mesh.Layer;
+                }
+                else if (Mesh.Layer < LastRenderLayer)
+                {
+                    Console.WriteLine("WARNING: Meshes not sorted. Fixing...");
+                    List<H3DMesh> SortedMeshes = Meshes.OrderBy(SortedMesh => SortedMesh.Layer).ToList();
+                    ClearMeshes();
+                    AddMeshes(SortedMeshes);
+                    break;
+                }
+            }
+            MeshNodesCount = MeshNodesTree.Count;
+            return false;
         }
     }
 }

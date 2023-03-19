@@ -15,18 +15,18 @@ namespace SPICA.Formats.CtrH3D.Animation
     {
         private H3DAnimQuatTransformFlags Flags;
 
-        [Ignore] public readonly List<Vector3>    Scales;
+        [Ignore] public readonly List<Vector3> Scales;
         [Ignore] public readonly List<Quaternion> Rotations;
-        [Ignore] public readonly List<Vector3>    Translations;
+        [Ignore] public readonly List<Vector3> Translations;
 
-        public bool HasScale       => Scales.Count       > 0;
-        public bool HasRotation    => Rotations.Count    > 0;
+        public bool HasScale => Scales.Count > 0;
+        public bool HasRotation => Rotations.Count > 0;
         public bool HasTranslation => Translations.Count > 0;
 
         public H3DAnimQuatTransform()
         {
-            Scales       = new List<Vector3>();
-            Rotations    = new List<Quaternion>();
+            Scales = new List<Vector3>();
+            Rotations = new List<Quaternion>();
             Translations = new List<Vector3>();
         }
 
@@ -44,15 +44,15 @@ namespace SPICA.Formats.CtrH3D.Animation
             for (int ElemIndex = 0; ElemIndex < 3; ElemIndex++)
             {
                 bool Constant = ((uint)Flags & ConstantMask) != 0;
-                bool Exists   = ((uint)Flags & NotExistMask) == 0;
+                bool Exists = ((uint)Flags & NotExistMask) == 0;
 
                 if (Exists)
                 {
                     Deserializer.BaseStream.Seek(Addresses[ElemIndex], SeekOrigin.Begin);
 
                     uint ElemFlags = 0;
-                    uint Address   = Addresses[ElemIndex];
-                    uint Count     = 1;
+                    uint Address = Addresses[ElemIndex];
+                    uint Count = 1;
 
                     if (!Constant)
                     {
@@ -62,11 +62,11 @@ namespace SPICA.Formats.CtrH3D.Animation
                          * This may or may not change on future versions (probably not), so we can safely ignore it.
                          */
                         float StartFrame = Deserializer.Reader.ReadSingle();
-                        float EndFrame   = Deserializer.Reader.ReadSingle();
+                        float EndFrame = Deserializer.Reader.ReadSingle();
 
                         ElemFlags = Deserializer.Reader.ReadUInt32();
-                        Address   = Deserializer.Reader.ReadUInt32();
-                        Count     = Deserializer.Reader.ReadUInt32();
+                        Address = Deserializer.Reader.ReadUInt32();
+                        Count = Deserializer.Reader.ReadUInt32();
                     }
 
                     Deserializer.BaseStream.Seek(Address, SeekOrigin.Begin);
@@ -75,7 +75,7 @@ namespace SPICA.Formats.CtrH3D.Animation
                     {
                         switch (ElemIndex)
                         {
-                            case 0: Scales.Add(Deserializer.Reader.ReadVector3());       break;
+                            case 0: Scales.Add(Deserializer.Reader.ReadVector3()); break;
                             case 1: Rotations.Add(Deserializer.Reader.ReadQuaternion()); break;
                             case 2: Translations.Add(Deserializer.Reader.ReadVector3()); break;
                         }
@@ -103,8 +103,8 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                 switch (ElemIndex)
                 {
-                    case 0: Elem = Scales;       break;
-                    case 1: Elem = Rotations;    break;
+                    case 0: Elem = Scales; break;
+                    case 1: Elem = Rotations; break;
                     case 2: Elem = Translations; break;
                 }
 
@@ -126,8 +126,8 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                         Serializer.Sections[(uint)H3DSectionId.Contents].Values.Add(new RefValue()
                         {
-                            Value     = Elem,
-                            Position  = Serializer.BaseStream.Position - 8,
+                            Value = Elem,
+                            Position = Serializer.BaseStream.Position - 8,
                             HasLength = true
                         });
                     }

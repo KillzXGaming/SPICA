@@ -32,9 +32,9 @@ namespace SPICA.Formats.CtrH3D.Model
 
         [Padding(4)] public short ParentIndex;
 
-        public Vector3   Scale;
-        public Vector3   Rotation;
-        public Vector3   Translation;
+        public Vector3 Scale;
+        public Vector3 Rotation;
+        public Vector3 Translation;
         public Matrix3x4 InverseTransform;
 
         private string _Name;
@@ -53,7 +53,7 @@ namespace SPICA.Formats.CtrH3D.Model
             {
                 Matrix4x4 Transform;
 
-                Transform  = Matrix4x4.CreateScale(Scale);
+                Transform = Matrix4x4.CreateScale(Scale);
                 Transform *= Matrix4x4.CreateRotationX(Rotation.X);
                 Transform *= Matrix4x4.CreateRotationY(Rotation.Y);
                 Transform *= Matrix4x4.CreateRotationZ(Rotation.Z);
@@ -76,9 +76,9 @@ namespace SPICA.Formats.CtrH3D.Model
             short Parent) : this()
         {
             this.Translation = Translation;
-            this.Rotation    = Rotation;
-            this.Scale       = Scale;
-            this.Name        = Name;
+            this.Rotation = Rotation;
+            this.Scale = Scale;
+            this.Name = Name;
 
             ParentIndex = Parent;
         }
@@ -126,9 +126,9 @@ namespace SPICA.Formats.CtrH3D.Model
 
             bool ScaleUniform = Scale.X == Scale.Y && Scale.X == Scale.Z;
 
-            if (ScaleUniform)                _Flags  = H3DBoneFlags.IsScaleUniform;
-            if (Scale       == Vector3.One)  _Flags |= H3DBoneFlags.IsScaleVolumeOne;
-            if (Rotation    == Vector3.Zero) _Flags |= H3DBoneFlags.IsRotationZero;
+            if (ScaleUniform) _Flags = H3DBoneFlags.IsScaleUniform;
+            if (Scale == Vector3.One) _Flags |= H3DBoneFlags.IsScaleVolumeOne;
+            if (Rotation == Vector3.Zero) _Flags |= H3DBoneFlags.IsRotationZero;
             if (Translation == Vector3.Zero) _Flags |= H3DBoneFlags.IsTranslationZero;
 
             Matrix4x4 Inverse;

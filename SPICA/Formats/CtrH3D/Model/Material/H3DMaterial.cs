@@ -50,13 +50,13 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             string MaterialName,
             string TextureName,
             string ShaderName = "DefaultShader",
-            int    ShaderIndex = 0)
+            int ShaderIndex = 0)
         {
             H3DMaterial Output = new H3DMaterial();
 
-            Output.MaterialParams.EmissionColor  = RGBA.White;
-            Output.MaterialParams.AmbientColor   = RGBA.White;
-            Output.MaterialParams.DiffuseColor   = RGBA.White;
+            Output.MaterialParams.EmissionColor = RGBA.White;
+            Output.MaterialParams.AmbientColor = RGBA.White;
+            Output.MaterialParams.DiffuseColor = RGBA.White;
             Output.MaterialParams.Specular0Color = RGBA.White;
             Output.MaterialParams.Specular1Color = RGBA.White;
             Output.MaterialParams.Constant0Color = RGBA.White;
@@ -65,13 +65,13 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.MaterialParams.Constant3Color = RGBA.White;
             Output.MaterialParams.Constant4Color = RGBA.White;
             Output.MaterialParams.Constant5Color = RGBA.White;
-            Output.MaterialParams.BlendColor     = RGBA.White;
+            Output.MaterialParams.BlendColor = RGBA.White;
 
             Output.MaterialParams.ColorScale = 1;
 
             Output.MaterialParams.TexEnvBufferColor = RGBA.White;
 
-            Output.MaterialParams.ColorOperation.BlendMode   = PICABlendMode.Blend;
+            Output.MaterialParams.ColorOperation.BlendMode = PICABlendMode.Blend;
             Output.MaterialParams.BlendFunction.ColorSrcFunc = PICABlendFunc.One;
             Output.MaterialParams.BlendFunction.ColorDstFunc = PICABlendFunc.Zero;
             Output.MaterialParams.BlendFunction.AlphaSrcFunc = PICABlendFunc.One;
@@ -81,27 +81,27 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
             Output.MaterialParams.DepthColorMask.DepthFunc = PICATestFunc.Lequal;
 
-            Output.MaterialParams.DepthColorMask.RedWrite   = true;
+            Output.MaterialParams.DepthColorMask.RedWrite = true;
             Output.MaterialParams.DepthColorMask.GreenWrite = true;
-            Output.MaterialParams.DepthColorMask.BlueWrite  = true;
+            Output.MaterialParams.DepthColorMask.BlueWrite = true;
             Output.MaterialParams.DepthColorMask.AlphaWrite = true;
             Output.MaterialParams.DepthColorMask.DepthWrite = true;
 
             Output.MaterialParams.StencilOperation.ZPassOp = PICAStencilOp.Replace;
-            
+
             Output.MaterialParams.StencilTest.Enabled = true;
             Output.MaterialParams.StencilTest.Function = PICATestFunc.Always;
             Output.MaterialParams.StencilTest.BufferMask = 0xFF;
             Output.MaterialParams.StencilTest.Mask = 0xFF;
             Output.MaterialParams.StencilTest.Reference = 0x7F;
 
-            Output.MaterialParams.ColorBufferRead  = false;
+            Output.MaterialParams.ColorBufferRead = false;
             Output.MaterialParams.ColorBufferWrite = true;
 
-            Output.MaterialParams.StencilBufferRead  = true;
+            Output.MaterialParams.StencilBufferRead = true;
             Output.MaterialParams.StencilBufferWrite = true;
 
-            Output.MaterialParams.DepthBufferRead  = true;
+            Output.MaterialParams.DepthBufferRead = true;
             Output.MaterialParams.DepthBufferWrite = true;
 
             Output.MaterialParams.TexEnvStages[0] = PICATexEnvStage.Texture0;
@@ -134,12 +134,19 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Output.MaterialParams.TextureCoords[2].ReferenceCameraIndex = -1;
             Output.MaterialParams.TextureCoords[2].Scale = Vector2.One;
 
-            Output.MaterialParams.ShaderReference = $"{ShaderIndex}@{ShaderName}";
+            if (ShaderIndex != 255)
+            {
+                Output.MaterialParams.ShaderReference = $"{ShaderIndex}@{ShaderName}";
+            }
+            else
+            {
+                Output.MaterialParams.ShaderReference = ShaderName;
+            }
             Output.MaterialParams.ModelReference = $"{MaterialName}@{ModelName}";
 
             Output.EnabledTextures[0] = true;
 
-            Output.Name         = MaterialName;
+            Output.Name = MaterialName;
             Output.Texture0Name = TextureName;
 
             return Output;
@@ -188,7 +195,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             Serializer.Sections[(uint)H3DSectionId.Strings].Values.Add(new RefValue()
             {
                 Position = -1,
-                Value    = $"{Name}-silhouette"
+                Value = $"{Name}-silhouette"
             });
 
             PICACommandWriter Writer = new PICACommandWriter();

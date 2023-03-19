@@ -22,7 +22,7 @@ namespace SPICA.Formats.CtrH3D.Animation
                 Position += 4;
 
                 bool Constant = (Flags & ConstantMask) != 0;
-                bool Exists   = (Flags & NotExistMask) == 0;
+                bool Exists = (Flags & NotExistMask) == 0;
 
                 if (Exists)
                 {
@@ -38,8 +38,8 @@ namespace SPICA.Formats.CtrH3D.Animation
         {
             H3DAnimVectorFlags Flags = (H3DAnimVectorFlags)Deserializer.Reader.ReadUInt32();
 
-            bool Constant = (Flags & H3DAnimVectorFlags.IsXConstant)   != 0;
-            bool Exists   = (Flags & H3DAnimVectorFlags.IsXInexistent) == 0;
+            bool Constant = (Flags & H3DAnimVectorFlags.IsXConstant) != 0;
+            bool Exists = (Flags & H3DAnimVectorFlags.IsXInexistent) == 0;
 
             if (Exists)
             {
@@ -64,7 +64,7 @@ namespace SPICA.Formats.CtrH3D.Animation
                 {
                     Serializer.Sections[(uint)H3DSectionId.Contents].Values.Add(new RefValue()
                     {
-                        Value    = Vector[ElemIndex],
+                        Value = Vector[ElemIndex],
                         Position = Serializer.BaseStream.Position
                     });
 

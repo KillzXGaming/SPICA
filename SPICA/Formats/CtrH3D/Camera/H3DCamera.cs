@@ -28,14 +28,14 @@ namespace SPICA.Formats.CtrH3D.Camera
         public float WScale;
 
         [TypeChoiceName("ViewType")]
-        [TypeChoice((uint)H3DCameraViewType.Aim,    typeof(H3DCameraViewAim))]
+        [TypeChoice((uint)H3DCameraViewType.Aim, typeof(H3DCameraViewAim))]
         [TypeChoice((uint)H3DCameraViewType.LookAt, typeof(H3DCameraViewLookAt))]
         [TypeChoice((uint)H3DCameraViewType.Rotate, typeof(H3DCameraViewRotation))]
         public object View;
 
         [TypeChoiceName("ProjectionType")]
         [TypeChoice((uint)H3DCameraProjectionType.Perspective, typeof(H3DCameraProjectionPerspective))]
-        [TypeChoice((uint)H3DCameraProjectionType.Orthogonal,  typeof(H3DCameraProjectionOrthogonal))]
+        [TypeChoice((uint)H3DCameraProjectionType.Orthogonal, typeof(H3DCameraProjectionOrthogonal))]
         public object Projection;
 
         public H3DMetaData MetaData;

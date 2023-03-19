@@ -13,8 +13,12 @@ namespace SPICA.Formats.CtrH3D.Light
 
         public Vector3 Direction;
 
+#pragma warning disable CS0169 // Le champ 'H3DFragmentLight.DistanceSamplerPtr' n'est jamais utilisé
         private uint DistanceSamplerPtr;
+#pragma warning restore CS0169 // Le champ 'H3DFragmentLight.DistanceSamplerPtr' n'est jamais utilisé
+#pragma warning disable CS0169 // Le champ 'H3DFragmentLight.AngleSamplerPtr' n'est jamais utilisé
         private uint AngleSamplerPtr;
+#pragma warning restore CS0169 // Le champ 'H3DFragmentLight.AngleSamplerPtr' n'est jamais utilisé
 
         public float AttenuationStart;
         public float AttenuationEnd;

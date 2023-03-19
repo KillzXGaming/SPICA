@@ -31,7 +31,9 @@ namespace SPICA.Formats.CtrH3D
 
         public bool IsReadOnly => Values.IsReadOnly;
 
+#pragma warning disable CS0067 // L'événement 'H3DMetaData.CollectionChanged' n'est jamais utilisé
         public event NotifyCollectionChangedEventHandler CollectionChanged;
+#pragma warning restore CS0067 // L'événement 'H3DMetaData.CollectionChanged' n'est jamais utilisé
 
         public IEnumerator<H3DMetaDataValue> GetEnumerator()
         {

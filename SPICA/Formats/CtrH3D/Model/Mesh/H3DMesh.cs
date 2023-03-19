@@ -17,9 +17,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
     [Inline]
     public class H3DMesh : ICustomSerialization, ICustomSerializeCmd
     {
-        [Ignore]
-        public bool IsVisible { get; set; } = true;
-
         public ushort MaterialIndex;
 
         [Padding(2)] private byte Flags;
@@ -56,24 +53,25 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
         public List<H3DSubMesh> SubMeshes;
 
+#pragma warning disable CS0169 // Le champ 'H3DMesh.DisableCommands' n'est jamais utilisé
         private uint[] DisableCommands;
+#pragma warning restore CS0169 // Le champ 'H3DMesh.DisableCommands' n'est jamais utilisé
 
         public Vector3 MeshCenter;
 
-        [Newtonsoft.Json.JsonIgnore]
         public H3DModel Parent;
 
+#pragma warning disable CS0169 // Le champ 'H3DMesh.UserDefinedAddress' n'est jamais utilisé
         private uint UserDefinedAddress;
+#pragma warning restore CS0169 // Le champ 'H3DMesh.UserDefinedAddress' n'est jamais utilisé
 
         public H3DMetaData MetaData;
 
         [Ignore] public byte[] RawBuffer;
         [Ignore] public int VertexStride;
 
-        [Ignore] public uint BufferAddress;
-
-        [Ignore] public List<PICAAttribute> Attributes;
-        [Ignore] public List<PICAFixedAttribute> FixedAttributes;
+        [Ignore] public readonly List<PICAAttribute> Attributes;
+        [Ignore] public readonly List<PICAFixedAttribute> FixedAttributes;
 
         [Ignore] public Vector4 PositionOffset;
 
@@ -137,7 +135,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             }
         }
 
-        public void UpdateBoolUniforms(H3DMaterial Material, bool isPkmn = false)
+        public void UpdateBoolUniforms(H3DMaterial Material)
         {
             H3DMaterialParams Params = Material.MaterialParams;
 
@@ -163,32 +161,27 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 bool IsSmoSk = SM.Skinning == H3DSubMeshSkinning.Smooth;
                 bool IsRgdSk = SM.Skinning == H3DSubMeshSkinning.Rigid;
 
-                if (isPkmn)
-                {
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 15);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1, 10);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2, 11);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1, 13);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2, 14);
-                }
-                else
-                {
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 3);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1, 10);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2, 11);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1, 13);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2, 14);
-                }
+                /*SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat,    3);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA,   7);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW,   8);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0,  9);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1,  10);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2,  11);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1,  13);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2,  14);*/
+                //Pokemon has those built differently for some reason
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 15);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap1, 10);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2, 11);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1, 13);
+                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2, 14);
             }
         }
 
@@ -201,7 +194,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
         {
             PICACommandReader Reader = new PICACommandReader(EnableCommands);
 
-            BufferAddress = 0;
+            uint BufferAddress = 0;
             ulong BufferFormats = 0;
             ulong BufferAttributes = 0;
             ulong BufferPermutation = 0;
@@ -217,6 +210,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 PICACommand Cmd = Reader.GetCommand();
 
                 uint Param = Cmd.Parameters[0];
+
                 switch (Cmd.Register)
                 {
                     case PICARegister.GPUREG_ATTRIBBUFFERS_FORMAT_LOW: BufferFormats |= (ulong)Param << 0; break;
@@ -242,9 +236,9 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
-
             for (int Index = 0; Index < AttributesTotal; Index++)
             {
+
                 if (((BufferFormats >> (48 + Index)) & 1) != 0)
                 {
                     FixedAttributes.Add(new PICAFixedAttribute()
@@ -303,20 +297,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             RawBuffer = Deserializer.Reader.ReadBytes(BufferCount * VertexStride);
 
-            var vertices = GetVertices();
-
-            Deserializer.BaseStream.Seek(Position, SeekOrigin.Begin);
-        }
-
-        internal void LoadRawBuffer(BinaryDeserializer Deserializer, int maxIndex)
-        {
-            long Position = Deserializer.BaseStream.Position;
-            int BufferCount = maxIndex + 1;
-
-            Deserializer.BaseStream.Seek(BufferAddress, SeekOrigin.Begin);
-
-            RawBuffer = Deserializer.Reader.ReadBytes(BufferCount * VertexStride);
-
             Deserializer.BaseStream.Seek(Position, SeekOrigin.Begin);
         }
 
@@ -331,6 +311,38 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             int AttributesTotal = 0;
 
             float[] Scales = new float[] { 1, 0, 0, 0, 1, 0, 0, 0 };
+            float[] FixedScales = new float[] { 1, 1, 1, 1, 1, 1, 1, 1 };
+            //gdkchan wtf why would you serialize with default normal scale 0, that's cringe. think of the fixed attributes!
+            foreach (PICAFixedAttribute Fixed in FixedAttributes)
+            {
+                switch (Fixed.Name)
+                {
+                    case PICAAttributeName.Position: //won't happen, but why not
+                        Scales[3] = FixedScales[3];
+                        break;
+                    case PICAAttributeName.Normal:
+                        Scales[2] = FixedScales[2];
+                        break;
+                    case PICAAttributeName.Tangent:
+                        Scales[1] = FixedScales[1];
+                        break;
+                    case PICAAttributeName.Color:
+                        Scales[0] = FixedScales[0];
+                        break;
+                    case PICAAttributeName.TexCoord0:
+                        Scales[7] = FixedScales[7];
+                        break;
+                    case PICAAttributeName.TexCoord1:
+                        Scales[6] = FixedScales[6];
+                        break;
+                    case PICAAttributeName.TexCoord2:
+                        Scales[5] = FixedScales[5];
+                        break;
+                    case PICAAttributeName.BoneWeight:
+                        Scales[4] = FixedScales[4];
+                        break;
+                }
+            }
 
             //Normal Attributes
             for (int Index = 0; Index < Attributes.Count; Index++)
@@ -384,7 +396,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             Writer.SetCommand(PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH, (uint)(BufferPermutation >> 32));
 
             Writer.SetCommand(PICARegister.GPUREG_ATTRIBBUFFERS_LOC, true,
-                0, //Base Address (Place holder)
+                0x03000000u, //Base Address (Place holder)
                 (uint)(BufferFormats >> 0),
                 (uint)(BufferFormats >> 32),
                 0, //Attributes Buffer Address (Place holder)
@@ -415,7 +427,9 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             Writer.WriteEnd();
 
+            //File.WriteAllBytes("D:/_REWorkspace/h3d_debug/" + MaterialIndex + ".bak.bin", PICACommandWriter.ToByteBuffer(EnableCommands));
             EnableCommands = Writer.GetBuffer();
+            //File.WriteAllBytes("D:/_REWorkspace/h3d_debug/" + MaterialIndex + ".bin", PICACommandWriter.ToByteBuffer(EnableCommands));
 
             Writer = new PICACommandWriter();
 
@@ -434,7 +448,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             Writer.WriteEnd();
 
-            DisableCommands = Writer.GetBuffer();
+            //DisableCommands = Writer.GetBuffer();
 
             return false;
         }

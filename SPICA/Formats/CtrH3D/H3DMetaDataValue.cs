@@ -22,12 +22,12 @@ namespace SPICA.Formats.CtrH3D
         public H3DMetaDataType Type;
 
         [TypeChoiceName("Type")]
-        [TypeChoice((uint)H3DMetaDataType.Integer,       typeof(List<int>))]
-        [TypeChoice((uint)H3DMetaDataType.Single,        typeof(List<float>))]
-        [TypeChoice((uint)H3DMetaDataType.ASCIIString,   typeof(List<string>))]
+        [TypeChoice((uint)H3DMetaDataType.Integer, typeof(List<int>))]
+        [TypeChoice((uint)H3DMetaDataType.Single, typeof(List<float>))]
+        [TypeChoice((uint)H3DMetaDataType.ASCIIString, typeof(List<string>))]
         [TypeChoice((uint)H3DMetaDataType.UnicodeString, typeof(List<H3DStringUtf16>))]
-        [TypeChoice((uint)H3DMetaDataType.BoundingBox,   typeof(List<H3DBoundingBox>))]
-        [TypeChoice((uint)H3DMetaDataType.VertexData,    typeof(List<H3DVertexData>))]
+        [TypeChoice((uint)H3DMetaDataType.BoundingBox, typeof(List<H3DBoundingBox>))]
+        [TypeChoice((uint)H3DMetaDataType.VertexData, typeof(List<H3DVertexData>))]
         [CustomLength(LengthPos.BeforePtr, LengthSize.Short)]
         public IList Values;
 

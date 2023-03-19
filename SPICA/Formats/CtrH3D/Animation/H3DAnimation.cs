@@ -15,7 +15,7 @@ namespace SPICA.Formats.CtrH3D.Animation
         }
 
         public H3DAnimationFlags AnimationFlags;
-        public H3DAnimationType  AnimationType;
+        public H3DAnimationType AnimationType;
 
         public ushort CurvesCount;
 

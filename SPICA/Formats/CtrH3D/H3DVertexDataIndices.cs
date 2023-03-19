@@ -9,11 +9,15 @@ namespace SPICA.Formats.CtrH3D
 {
     public struct H3DVertexDataIndices : ICustomSerialization
     {
+#pragma warning disable CS0649 // Le champ 'H3DVertexDataIndices.Type' n'est jamais assigné et aura toujours sa valeur par défaut 0
         private byte Type;
+#pragma warning restore CS0649 // Le champ 'H3DVertexDataIndices.Type' n'est jamais assigné et aura toujours sa valeur par défaut 0
 
         public PICADrawMode DrawMode;
 
+#pragma warning disable CS0649 // Le champ 'H3DVertexDataIndices.Count' n'est jamais assigné et aura toujours sa valeur par défaut 0
         private ushort Count;
+#pragma warning restore CS0649 // Le champ 'H3DVertexDataIndices.Count' n'est jamais assigné et aura toujours sa valeur par défaut 0
 
         public int MaxIndex
         {
@@ -36,7 +40,7 @@ namespace SPICA.Formats.CtrH3D
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
             bool Is16Bits = Type == 1;
-            uint Address  = Deserializer.Reader.ReadUInt32();
+            uint Address = Deserializer.Reader.ReadUInt32();
             long Position = Deserializer.BaseStream.Position;
 
             Indices = new ushort[Count];
@@ -87,9 +91,9 @@ namespace SPICA.Formats.CtrH3D
 
             Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
             {
-                Parent   = this,
+                Parent = this,
                 Position = Position,
-                Value    = Data
+                Value = Data
             });
 
             Serializer.BaseStream.Seek(4, SeekOrigin.Current);
