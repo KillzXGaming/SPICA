@@ -14,15 +14,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 {
     public class H3DMaterialParams : ICustomSerialization, INamed
     {
-        private uint UniqueId;
-
-        [Ignore]
-        public Vector4 SelectionColor = new Vector4(1, 1, 0, 0);
-
-        [Ignore]
-        public static int DisplayStageID = -1;
-        [Ignore]
-        public static bool DisplayStageDirect = false;
+        public uint UniqueId;
 
         public H3DMaterialFlags Flags;
         public H3DFragmentFlags FragmentFlags;
@@ -31,7 +23,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
         public H3DMaterialShader MaterialShader;
 
-        [Inline, FixedLength(3)] public H3DTextureCoord[] TextureCoords;
+        [Inline, FixedLength(3)] public readonly H3DTextureCoord[] TextureCoords;
 
         public ushort LightSetIndex;
         public ushort FogIndex;
@@ -59,9 +51,6 @@ namespace SPICA.Formats.CtrH3D.Model.Material
         private uint ReflecBSamplerPtr;
 
         private byte LayerConfig;
-
-        [Ignore]
-        public int RenderLayer;
 
         public H3DTranslucencyKind TranslucencyKind
         {
@@ -144,15 +133,13 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
         [IfVersion(CmpOp.Gequal, 7)] public H3DMetaData MetaData;
 
-        [Ignore] public PICALUTInAbs   LUTInputAbsolute = new PICALUTInAbs();
-        [Ignore] public PICALUTInSel   LUTInputSelection = new PICALUTInSel();
-        [Ignore] public PICALUTInScale LUTInputScale = new PICALUTInScale();
+        [Ignore] public PICALUTInAbs   LUTInputAbsolute;
+        [Ignore] public PICALUTInSel   LUTInputSelection;
+        [Ignore] public PICALUTInScale LUTInputScale;
 
-        [Ignore] public PICATexEnvStage[] TexEnvStages;
+        [Ignore] public readonly PICATexEnvStage[] TexEnvStages;
 
         [Ignore] public RGBA TexEnvBufferColor;
-
-        [Ignore] public CtrGfx.Model.Material.GfxFragOpBlendMode BlendMode;
 
         [Ignore] public PICAColorOperation ColorOperation;
 
@@ -181,96 +168,6 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
         [Ignore] public float[] TextureSources;
 
-        #region Flag Helpers
-
-        [Ignore]
-        public bool IsPolygonOffsetEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsPolygonOffsetEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsPolygonOffsetEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsFogEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsFogEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsFogEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsFragmentLightingEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsFragmentLightingEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsFragmentLightingEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsVertexLightingEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsVertexLightingEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsVertexLightingEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsHemiSphereLightingEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsHemiSphereLightingEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsHemiSphereLightingEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsHemiSphereOcclusionEnabled
-        {
-            get { return Flags.HasFlag(H3DMaterialFlags.IsHemiSphereOcclusionEnabled); }
-            set { SetFlag(H3DMaterialFlags.IsHemiSphereOcclusionEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsClampHighLightEnabled
-        {
-            get { return FragmentFlags.HasFlag(H3DFragmentFlags.IsClampHighLightEnabled); }
-            set { SetFlag(H3DFragmentFlags.IsClampHighLightEnabled, value); }
-        }
-
-        [Ignore]
-        public bool IsLUTDist0Enabled
-        {
-            get { return FragmentFlags.HasFlag(H3DFragmentFlags.IsLUTDist0Enabled); }
-            set { SetFlag(H3DFragmentFlags.IsLUTDist0Enabled, value); }
-        }
-
-        [Ignore]
-        public bool IsLUTDist1Enabled
-        {
-            get { return FragmentFlags.HasFlag(H3DFragmentFlags.IsLUTDist1Enabled); }
-            set { SetFlag(H3DFragmentFlags.IsLUTDist1Enabled, value); }
-        }
-
-        [Ignore]
-        public bool IsLUTGeoFactorEnabled
-        {
-            get { return FragmentFlags.HasFlag(H3DFragmentFlags.IsLUTGeoFactorEnabled); }
-            set  { SetFlag(H3DFragmentFlags.IsLUTGeoFactorEnabled, value); }
-        }
-
-        public void SetFlag(H3DFragmentFlags flag, bool value)
-        {
-            if (value)
-                FragmentFlags |= flag;
-            else
-                FragmentFlags &= ~flag;
-        }
-
-        public void SetFlag(H3DMaterialFlags flag, bool value)
-        {
-            if (value)
-                Flags |= flag;
-            else
-                Flags &= ~flag;
-        }
-
-        #endregion
-
         public string Name
         {
             get => ModelReference;
@@ -296,7 +193,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             GeoShaderUniforms = new Dictionary<uint, Vector4>();
         }
 
-        private void GenerateUniqueId()
+        public void GenerateUniqueId()
         {
             FNV1a FNV = new FNV1a();
 
@@ -634,7 +531,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
                 IOUtils.ToUInt32(8),
                 IOUtils.ToUInt32(1),
                 IOUtils.ToUInt32(8));
-            
+
             Writer.WriteEnd();
 
             FragmentShaderCommands = Writer.GetBuffer();

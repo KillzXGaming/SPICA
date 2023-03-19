@@ -24,8 +24,8 @@ namespace SPICA.Formats.CtrH3D
 
         public static int CompareBuffer(RefValue LHS, RefValue RHS)
         {
-            if (LHS.Parent.GetType() == RHS.Parent.GetType())
-                return 0;
+            if      (LHS.Parent == RHS.Parent)
+                return  0;
             else if (LHS.Parent is H3DTexture)
                 return -1;
             else

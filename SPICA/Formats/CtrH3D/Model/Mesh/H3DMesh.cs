@@ -20,9 +20,6 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
         [Ignore]
         public bool IsVisible { get; set; } = true;
 
-        [Ignore]
-        public bool IsSelected { get; set; }
-
         public ushort MaterialIndex;
 
         [Padding(2)] private byte Flags;
@@ -71,11 +68,11 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
         public H3DMetaData MetaData;
 
         [Ignore] public byte[] RawBuffer;
-        [Ignore] public int    VertexStride;
+        [Ignore] public int VertexStride;
 
         [Ignore] public uint BufferAddress;
 
-        [Ignore] public List<PICAAttribute>      Attributes;
+        [Ignore] public List<PICAAttribute> Attributes;
         [Ignore] public List<PICAFixedAttribute> FixedAttributes;
 
         [Ignore] public Vector4 PositionOffset;
@@ -84,7 +81,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
         {
             SubMeshes = new List<H3DSubMesh>();
 
-            Attributes      = new List<PICAAttribute>();
+            Attributes = new List<PICAAttribute>();
             FixedAttributes = new List<PICAFixedAttribute>();
         }
 
@@ -103,21 +100,21 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             this.Attributes = Attributes ?? throw Exceptions.GetNullException("Attributes");
 
-            this.SubMeshes  = SubMeshes;
+            this.SubMeshes = SubMeshes;
         }
 
         public H3DMesh(
-            byte[]                   RawBuffer,
-            int                      VertexStride,
-            List<PICAAttribute>      Attributes, 
+            byte[] RawBuffer,
+            int VertexStride,
+            List<PICAAttribute> Attributes,
             List<PICAFixedAttribute> FixedAttributes,
-            List<H3DSubMesh>         SubMeshes)
+            List<H3DSubMesh> SubMeshes)
         {
-            this.RawBuffer       = RawBuffer;
-            this.VertexStride    = VertexStride;
-            this.Attributes      = Attributes      ?? new List<PICAAttribute>();
+            this.RawBuffer = RawBuffer;
+            this.VertexStride = VertexStride;
+            this.Attributes = Attributes ?? new List<PICAAttribute>();
             this.FixedAttributes = FixedAttributes ?? new List<PICAFixedAttribute>();
-            this.SubMeshes       = SubMeshes       ?? new List<H3DSubMesh>();
+            this.SubMeshes = SubMeshes ?? new List<H3DSubMesh>();
         }
 
         private void H3DMeshImpl(IEnumerable<PICAVertex> Vertices, List<PICAAttribute> Attributes)
@@ -140,33 +137,17 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             }
         }
 
-        public void UpdateHemiLight(H3DMaterial Material)
-        {
-            bool IsHemiL = Material.MaterialParams.Flags.HasFlag(H3DMaterialFlags.IsHemiSphereLightingEnabled);
-            bool isHemiO = Material.MaterialParams.Flags.HasFlag(H3DMaterialFlags.IsHemiSphereOcclusionEnabled);
-            foreach (H3DSubMesh SM in SubMeshes)
-            {
-                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsHemiL, 5);
-                SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, isHemiO, 6);
-            }
-        }
-
-        public void UpdateBoolUniforms(H3DMaterial Material, bool isPokemon = false, bool isSmashBros = false)
+        public void UpdateBoolUniforms(H3DMaterial Material, bool isPkmn = false)
         {
             H3DMaterialParams Params = Material.MaterialParams;
-            bool isPkmn = Params.ShaderReference.Contains("PokePack") || 
-                          Params.ShaderReference.Contains("BattleChar") || isPokemon;
 
-            bool Quat  = Attributes.Any(x => x.Name == PICAAttributeName.Normal);
+            bool Quat = Attributes.Any(x => x.Name == PICAAttributeName.Normal);
             bool VertA = Attributes.Any(x => x.Name == PICAAttributeName.Color);
             bool BoneW = Attributes.Any(x => x.Name == PICAAttributeName.BoneWeight);
 
             bool IsTex0 = Material.EnabledTextures[0];
             bool IsTex1 = Material.EnabledTextures[1];
             bool IsTex2 = Material.EnabledTextures[2];
-
-            bool IsHemiL = Material.MaterialParams.Flags.HasFlag(H3DMaterialFlags.IsHemiSphereLightingEnabled);
-            bool isHemiO = Material.MaterialParams.Flags.HasFlag(H3DMaterialFlags.IsHemiSphereOcclusionEnabled);
 
             bool UVMap0 = Params.TextureCoords[0].MappingType == H3DTextureMappingType.UvCoordinateMap && IsTex0;
             bool UVMap1 = Params.TextureCoords[1].MappingType == H3DTextureMappingType.UvCoordinateMap && IsTex1;
@@ -186,10 +167,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 {
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
-
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsHemiL, 5);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, isHemiO, 6);
-
+                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 15);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
@@ -197,18 +175,12 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap2, 11);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex1, 13);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsTex2, 14);
-
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 15);
                 }
                 else
                 {
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsSmoSk, 1);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsRgdSk, 2);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, Quat, 3);
-
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, IsHemiL, 5);
-                    SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, isHemiO, 6);
-
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, VertA, 7);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, BoneW, 8);
                     SM.BoolUniforms = (ushort)BitUtils.SetBit(SM.BoolUniforms, UVMap0, 9);
@@ -229,14 +201,14 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
         {
             PICACommandReader Reader = new PICACommandReader(EnableCommands);
 
-            BufferAddress           = 0;
-            ulong BufferFormats     = 0;
-            ulong BufferAttributes  = 0;
+            BufferAddress = 0;
+            ulong BufferFormats = 0;
+            ulong BufferAttributes = 0;
             ulong BufferPermutation = 0;
-            int   AttributesCount   = 0;
-            int   AttributesTotal   = 0;
+            int AttributesCount = 0;
+            int AttributesTotal = 0;
 
-            int FixedIndex   = 0;
+            int FixedIndex = 0;
 
             PICAVectorFloat24[] Fixed = new PICAVectorFloat24[12];
 
@@ -247,15 +219,15 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 uint Param = Cmd.Parameters[0];
                 switch (Cmd.Register)
                 {
-                    case PICARegister.GPUREG_ATTRIBBUFFERS_FORMAT_LOW:  BufferFormats |= (ulong)Param <<  0; break;
+                    case PICARegister.GPUREG_ATTRIBBUFFERS_FORMAT_LOW: BufferFormats |= (ulong)Param << 0; break;
                     case PICARegister.GPUREG_ATTRIBBUFFERS_FORMAT_HIGH: BufferFormats |= (ulong)Param << 32; break;
 
-                    case PICARegister.GPUREG_ATTRIBBUFFER0_OFFSET:  BufferAddress     = Param; break;
+                    case PICARegister.GPUREG_ATTRIBBUFFER0_OFFSET: BufferAddress = Param; break;
                     case PICARegister.GPUREG_ATTRIBBUFFER0_CONFIG1: BufferAttributes |= Param; break;
                     case PICARegister.GPUREG_ATTRIBBUFFER0_CONFIG2:
                         BufferAttributes |= (ulong)(Param & 0xffff) << 32;
-                        VertexStride      =  (byte)(Param >> 16);
-                        AttributesCount   =   (int)(Param >> 28);
+                        VertexStride = (byte)(Param >> 16);
+                        AttributesCount = (int)(Param >> 28);
                         break;
 
                     case PICARegister.GPUREG_FIXEDATTRIB_INDEX: FixedIndex = (int)Param; break;
@@ -266,7 +238,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
                     case PICARegister.GPUREG_VSH_NUM_ATTR: AttributesTotal = (int)(Param + 1); break;
 
-                    case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW:  BufferPermutation |= (ulong)Param <<  0; break;
+                    case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW: BufferPermutation |= (ulong)Param << 0; break;
                     case PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH: BufferPermutation |= (ulong)Param << 32; break;
                 }
             }
@@ -277,33 +249,33 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
                 {
                     FixedAttributes.Add(new PICAFixedAttribute()
                     {
-                        Name  = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
+                        Name = (PICAAttributeName)((BufferPermutation >> Index * 4) & 0xf),
                         Value = Fixed[Index]
                     });
                 }
                 else
                 {
-                    int PermutationIdx = (int)((BufferAttributes  >> Index          * 4) & 0xf);
-                    int AttributeName  = (int)((BufferPermutation >> PermutationIdx * 4) & 0xf);
-                    int AttributeFmt   = (int)((BufferFormats     >> PermutationIdx * 4) & 0xf);
+                    int PermutationIdx = (int)((BufferAttributes >> Index * 4) & 0xf);
+                    int AttributeName = (int)((BufferPermutation >> PermutationIdx * 4) & 0xf);
+                    int AttributeFmt = (int)((BufferFormats >> PermutationIdx * 4) & 0xf);
 
                     PICAAttribute Attrib = new PICAAttribute()
                     {
-                        Name     = (PICAAttributeName)AttributeName,
-                        Format   = (PICAAttributeFormat)(AttributeFmt & 3),
+                        Name = (PICAAttributeName)AttributeName,
+                        Format = (PICAAttributeFormat)(AttributeFmt & 3),
                         Elements = (AttributeFmt >> 2) + 1,
-                        Scale    = 1
+                        Scale = 1
                     };
 
                     switch (Attrib.Name)
                     {
-                        case PICAAttributeName.Position:   Attrib.Scale = Reader.VtxShaderUniforms[7].X; break;
-                        case PICAAttributeName.Normal:     Attrib.Scale = Reader.VtxShaderUniforms[7].Y; break;
-                        case PICAAttributeName.Tangent:    Attrib.Scale = Reader.VtxShaderUniforms[7].Z; break;
-                        case PICAAttributeName.Color:      Attrib.Scale = Reader.VtxShaderUniforms[7].W; break;
-                        case PICAAttributeName.TexCoord0:  Attrib.Scale = Reader.VtxShaderUniforms[8].X; break;
-                        case PICAAttributeName.TexCoord1:  Attrib.Scale = Reader.VtxShaderUniforms[8].Y; break;
-                        case PICAAttributeName.TexCoord2:  Attrib.Scale = Reader.VtxShaderUniforms[8].Z; break;
+                        case PICAAttributeName.Position: Attrib.Scale = Reader.VtxShaderUniforms[7].X; break;
+                        case PICAAttributeName.Normal: Attrib.Scale = Reader.VtxShaderUniforms[7].Y; break;
+                        case PICAAttributeName.Tangent: Attrib.Scale = Reader.VtxShaderUniforms[7].Z; break;
+                        case PICAAttributeName.Color: Attrib.Scale = Reader.VtxShaderUniforms[7].W; break;
+                        case PICAAttributeName.TexCoord0: Attrib.Scale = Reader.VtxShaderUniforms[8].X; break;
+                        case PICAAttributeName.TexCoord1: Attrib.Scale = Reader.VtxShaderUniforms[8].Y; break;
+                        case PICAAttributeName.TexCoord2: Attrib.Scale = Reader.VtxShaderUniforms[8].Z; break;
                         case PICAAttributeName.BoneWeight: Attrib.Scale = Reader.VtxShaderUniforms[8].W; break;
                     }
 
@@ -331,6 +303,8 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             RawBuffer = Deserializer.Reader.ReadBytes(BufferCount * VertexStride);
 
+            var vertices = GetVertices();
+
             Deserializer.BaseStream.Seek(Position, SeekOrigin.Begin);
         }
 
@@ -351,10 +325,10 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             //Fill Commands
             PICACommandWriter Writer;
 
-            ulong BufferFormats     = 0;
-            ulong BufferAttributes  = 0;
+            ulong BufferFormats = 0;
+            ulong BufferAttributes = 0;
             ulong BufferPermutation = 0;
-            int   AttributesTotal   = 0;
+            int AttributesTotal = 0;
 
             float[] Scales = new float[] { 1, 0, 0, 0, 1, 0, 0, 0 };
 
@@ -367,22 +341,22 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
                 ulong AttribFmt;
 
-                AttribFmt  = (ulong)Attrib.Format;
+                AttribFmt = (ulong)Attrib.Format;
                 AttribFmt |= (ulong)((Attrib.Elements - 1) & 3) << 2;
 
-                BufferFormats     |=        AttribFmt   << Shift;
+                BufferFormats |= AttribFmt << Shift;
                 BufferPermutation |= (ulong)Attrib.Name << Shift;
-                BufferAttributes  |= (ulong)Index       << Shift;
+                BufferAttributes |= (ulong)Index << Shift;
 
                 switch (Attrib.Name)
                 {
-                    case PICAAttributeName.Position:   Scales[3] = Attrib.Scale; break;
-                    case PICAAttributeName.Normal:     Scales[2] = Attrib.Scale; break;
-                    case PICAAttributeName.Tangent:    Scales[1] = Attrib.Scale; break;
-                    case PICAAttributeName.Color:      Scales[0] = Attrib.Scale; break;
-                    case PICAAttributeName.TexCoord0:  Scales[7] = Attrib.Scale; break;
-                    case PICAAttributeName.TexCoord1:  Scales[6] = Attrib.Scale; break;
-                    case PICAAttributeName.TexCoord2:  Scales[5] = Attrib.Scale; break;
+                    case PICAAttributeName.Position: Scales[3] = Attrib.Scale; break;
+                    case PICAAttributeName.Normal: Scales[2] = Attrib.Scale; break;
+                    case PICAAttributeName.Tangent: Scales[1] = Attrib.Scale; break;
+                    case PICAAttributeName.Color: Scales[0] = Attrib.Scale; break;
+                    case PICAAttributeName.TexCoord0: Scales[7] = Attrib.Scale; break;
+                    case PICAAttributeName.TexCoord1: Scales[6] = Attrib.Scale; break;
+                    case PICAAttributeName.TexCoord2: Scales[5] = Attrib.Scale; break;
                     case PICAAttributeName.BoneWeight: Scales[4] = Attrib.Scale; break;
                 }
             }
@@ -406,15 +380,15 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             Writer.SetCommand(PICARegister.GPUREG_VSH_NUM_ATTR, (uint)(AttributesTotal - 1), 1);
 
-            Writer.SetCommand(PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW,  (uint)(BufferPermutation >>  0));
+            Writer.SetCommand(PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_LOW, (uint)(BufferPermutation >> 0));
             Writer.SetCommand(PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH, (uint)(BufferPermutation >> 32));
 
             Writer.SetCommand(PICARegister.GPUREG_ATTRIBBUFFERS_LOC, true,
                 0, //Base Address (Place holder)
-                (uint)(BufferFormats >>  0),
+                (uint)(BufferFormats >> 0),
                 (uint)(BufferFormats >> 32),
                 0, //Attributes Buffer Address (Place holder)
-                (uint)(BufferAttributes >>  0),
+                (uint)(BufferAttributes >> 0),
                 (uint)(BufferAttributes >> 32));
 
             for (int Index = 0; Index < FixedAttributes.Count; Index++)
@@ -473,13 +447,12 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
                 Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
                 {
-                    Parent   = this,
-                    Value    = RawBuffer,
-                    Position = Position + 0x30,
-                    Padding = 0x10,
+                    Parent = this,
+                    Value = RawBuffer,
+                    Position = Position + 0x30
                 });
 
-                H3DRelocator.AddCmdReloc(Serializer, H3DSection.BaseAddress,   Position + 0x20);
+                H3DRelocator.AddCmdReloc(Serializer, H3DSection.BaseAddress, Position + 0x20);
                 H3DRelocator.AddCmdReloc(Serializer, H3DSection.RawDataVertex, Position + 0x30);
             }
         }

@@ -8,8 +8,6 @@ using SPICA.Serialization.Serializer;
 
 using System;
 using System.IO;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System.Linq;
 
 namespace SPICA.Formats.CtrH3D.Texture
@@ -58,137 +56,15 @@ namespace SPICA.Formats.CtrH3D.Texture
 
         public H3DTexture() { }
 
-        public H3DTexture(string FileName, PICATextureFormat Format = 0, int mipCount = 1)
-        {
-            var Img = Image.Load<Rgba32>(FileName);
-            var mips = ImageSharpTextureHelper.GenerateMipmaps(Img, (uint)mipCount);
-
-            using (Img)
-            {
-                Name = Path.GetFileNameWithoutExtension(FileName);
-                this.Format = Format;
-
-                H3DTextureImpl(Img, mipCount);
-            }
-        }
-
-        public H3DTexture(string Name, Image<Rgba32> Img, PICATextureFormat Format = 0)
-        {
-            this.Name   = Name;
-            this.Format = Format;
-
-            H3DTextureImpl(Img);
-        }
-
-        public H3DTexture(string Name, byte[] data, PICATextureFormat Format = 0)
-        {
-            this.Name = Name;
-            this.Format = Format;
-
-            Image<Rgba32> Img = Image.Load<Rgba32>(data);
-
-            H3DTextureImpl(Img);
-        }
-
-        private void H3DTextureImpl(Image<Rgba32> Img, int mipCount = 1)
-        {
-            MipmapSize = (byte)mipCount;
-
-            Width  = (int)BitUtils.Pow2RoundDown((uint)Img.Width);
-            Height = (int)BitUtils.Pow2RoundDown((uint)Img.Height);
-
-            if (Img.Width  != Width ||
-                Img.Height != Height)
-            {
-                /*
-                 * 3DS GPU only accepts textures with power of 2 sizes.
-                 * If the texture doesn't have a power of 2 size, we need to resize it then.
-                 */
-                ImageSharpTextureHelper.Resize(Img, Width, Height);
-                RawBufferXPos = TextureConverter.Encode(Img, Format, mipCount);
-            }
-            else
-            {
-                RawBufferXPos = TextureConverter.Encode(Img, Format, mipCount);
-            }
-        }
 
         public byte[] ToRGBA(int Face = 0)
         {
-            try
-            {
-                return TextureConverter.DecodeBuffer(BufferFromFace(Face), Width, Height, Format);
-            }
-            catch
-            {
-                return new byte[Width * Height * 4];
-            }
+            return TextureConverter.DecodeBuffer(BufferFromFace(Face), Width, Height, Format);
         }
 
         public System.Drawing.Bitmap ToBitmap(int Face = 0)
         {
-            try
-            {
-                return TextureConverter.DecodeBitmap(BufferFromFace(Face), Width, Height, Format);
-            }
-            catch
-            {
-                return new System.Drawing.Bitmap(Width, Height);
-            }
-        }
-
-        public System.Drawing.Bitmap ToMipBitmap(int level, int Face = 0)
-        {
-            return TextureConverter.DecodeBitmap(GetMipmap(BufferFromFace(Face), level),
-                Math.Max(1, this.Width >> level),
-                Math.Max(1, this.Height >> level), Format);
-        }
-
-        public byte[] ToMipRGBA(int level, int Face = 0)
-        {
-            try
-            {
-                return TextureConverter.DecodeBuffer(GetMipmap(BufferFromFace(Face), level),
-                    Math.Max(1, this.Width >> level),
-                    Math.Max(1, this.Height >> level), Format);
-            }
-            catch
-            {
-                return new byte[Math.Max(1, this.Width >> level) * Math.Max(1, this.Height >> level) * 4];
-            }
-        }
-
-        private byte[] GetMipmap(byte[] data, int level)
-        {
-            int offset = GetMipOffset(level);
-            int width = Math.Max(1, this.Width >> level);
-            int height = Math.Max(1, this.Height >> level);
-            int size = (width * height * TextureConverter.FmtBPP[(int)this.Format] / 8);
-            if (offset + size > data.Length)
-                return data;
-
-            var newBytes = new byte[size];
-            Buffer.BlockCopy(data, offset, newBytes, 0, size);
-
-            return newBytes;
-        }
-
-        private int GetMipOffset(int level)
-        {
-            if (level == 0)
-                return 0;
-
-            int offset = 0;
-            for (int i = 0; i < this.MipmapSize; i++)
-            {
-                if (i == level)
-                    return offset;
-
-                int width = Math.Max(1, this.Width >> i);
-                int height = Math.Max(1, this.Height >> i);
-                offset += (width * height * TextureConverter.FmtBPP[(int)this.Format] / 8);
-            }
-            return offset;
+            return TextureConverter.DecodeBitmap(BufferFromFace(Face), Width, Height, Format);
         }
 
         private byte[] BufferFromFace(int Face)
@@ -201,26 +77,9 @@ namespace SPICA.Formats.CtrH3D.Texture
                 case 3: return RawBufferYNeg;
                 case 4: return RawBufferZPos;
                 case 5: return RawBufferZNeg;
-                        
+
                 default: throw new ArgumentOutOfRangeException("Expected a value in 0-6 range!");
             }
-        }
-
-        public void Export(string filePath)
-        {
-            H3D h3d = new H3D();
-            h3d.Textures.Add(this);
-            H3D.Save(filePath, h3d);
-        }
-
-        public void Replace(string filePath)
-        {
-            H3D h3d = H3D.Open(File.ReadAllBytes(filePath));
-            if (h3d.Textures.Count == 0)
-                return;
-
-            this.Name = h3d.Textures[0].Name;
-            ReplaceData(h3d.Textures[0]);
         }
 
         public void ReplaceData(H3DTexture Texture)
@@ -231,7 +90,7 @@ namespace SPICA.Formats.CtrH3D.Texture
 
             RawBufferXPos = Texture.RawBufferXPos;
 
-            Width  = Texture.Width;
+            Width = Texture.Width;
             Height = Texture.Height;
         }
 
@@ -250,8 +109,8 @@ namespace SPICA.Formats.CtrH3D.Texture
                 switch (Cmd.Register)
                 {
                     case PICARegister.GPUREG_TEXUNIT0_DIM:
-                        Height = (int)(Param >>  0) & 0x7ff;
-                        Width  = (int)(Param >> 16) & 0x7ff;
+                        Height = (int)(Param >> 0) & 0x7ff;
+                        Width = (int)(Param >> 16) & 0x7ff;
                         break;
                     case PICARegister.GPUREG_TEXUNIT0_ADDR1: Address[0] = Param; break;
                     case PICARegister.GPUREG_TEXUNIT0_ADDR2: Address[1] = Param; break;
@@ -262,7 +121,7 @@ namespace SPICA.Formats.CtrH3D.Texture
                 }
             }
 
-            int Length = TextureConverter.CalculateTotalSize(Width, Height, MipmapSize, Format);
+            int Length = TextureConverter.CalculateLength(Width, Height, Format);
 
             long Position = Deserializer.BaseStream.Position;
 
@@ -346,9 +205,9 @@ namespace SPICA.Formats.CtrH3D.Texture
 
             Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
             {
-                Parent   = this,
-                Value    = RawBufferXPos,
-                Position = Position,
+                Parent = this,
+                Value = RawBufferXPos,
+                Position = Position
             });
         }
     }

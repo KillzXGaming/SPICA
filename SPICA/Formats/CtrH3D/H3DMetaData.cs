@@ -53,6 +53,16 @@ namespace SPICA.Formats.CtrH3D
             Values.Insert(Index, Value);
         }
 
+        public H3DMetaDataValue Get(string Name)
+        {
+            int idx = Values.Find(Name);
+            if (idx != -1)
+            {
+                return Values[idx];
+            }
+            return null;
+        }
+
         public bool Remove(H3DMetaDataValue item)
         {
             return Values.Remove(item);

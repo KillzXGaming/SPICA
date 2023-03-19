@@ -4,7 +4,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 {
     public class H3DMaterialAnim : H3DAnimation
     {
-        public List<string> TextureNames;
+        public readonly List<string> TextureNames;
 
         public H3DMaterialAnim()
         {

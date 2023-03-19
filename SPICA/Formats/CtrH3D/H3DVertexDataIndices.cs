@@ -4,7 +4,6 @@ using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System.IO;
-using System.Linq;
 
 namespace SPICA.Formats.CtrH3D
 {
@@ -86,15 +85,12 @@ namespace SPICA.Formats.CtrH3D
 
             H3DRelocator.AddCmdReloc(Serializer, Section, Position);
 
-            if (!Serializer.Sections[(uint)H3DSectionId.RawData].Values.Any(x => x.Position == Position))
+            Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
             {
-                Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
-                {
-                    Parent = this,
-                    Position = Position,
-                    Value = Data
-                });
-            }
+                Parent   = this,
+                Position = Position,
+                Value    = Data
+            });
 
             Serializer.BaseStream.Seek(4, SeekOrigin.Current);
 

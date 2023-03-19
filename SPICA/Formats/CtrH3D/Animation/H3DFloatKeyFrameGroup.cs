@@ -78,7 +78,6 @@ namespace SPICA.Formats.CtrH3D.Animation
 
                 KF.Frame = KF.Frame * FrameScale;
                 KF.Value = KF.Value * ValueScale + ValueOffset;
-
                 KeyFrames.Add(KF);
             }
         }

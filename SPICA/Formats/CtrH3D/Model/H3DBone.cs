@@ -68,15 +68,6 @@ namespace SPICA.Formats.CtrH3D.Model
             InverseTransform = new Matrix3x4();
         }
 
-        public H3DBone(string name) : base()
-        {
-            Name = name;
-            ParentIndex = -1;
-            Scale = new Vector3(1, 1, 1);
-            Translation = new Vector3();
-            Rotation = new Vector3();
-        }
-
         public H3DBone(
             Vector3 Translation,
             Vector3 Rotation,
@@ -90,34 +81,6 @@ namespace SPICA.Formats.CtrH3D.Model
             this.Name        = Name;
 
             ParentIndex = Parent;
-        }
-
-        /// <summary>
-        /// Updates the current bone transform flags.
-        /// These flags determine what matrices can be ignored for matrix updating.
-        /// </summary>
-        public void UpdateTransformFlags()
-        {
-            H3DBoneFlags flags = this.Flags;
-
-            //Reset transform flags
-            flags &= ~H3DBoneFlags.IsTranslationZero;
-            flags &= ~H3DBoneFlags.IsScaleVolumeOne;
-            flags &= ~H3DBoneFlags.IsRotationZero;
-            flags &= ~H3DBoneFlags.IsScaleUniform;
-
-            //SRT checks to update matrices
-            if (this.Translation == Vector3.Zero)
-                flags |= H3DBoneFlags.IsTranslationZero;
-            if (this.Scale == Vector3.One)
-                flags |= H3DBoneFlags.IsScaleVolumeOne;
-            if (this.Rotation == Vector3.Zero)
-                flags |= H3DBoneFlags.IsRotationZero;
-            //Extra scale flags
-            if (this.Scale.X == this.Scale.Y && this.Scale.X == this.Scale.Z)
-                flags |= H3DBoneFlags.IsScaleUniform;
-
-            this.Flags = flags;
         }
 
         public Matrix4x4 GetWorldTransform(H3DDict<H3DBone> Skeleton)

@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SPICA.Formats.CtrH3D.Animation
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
     public class H3DAnimBoolean : H3DAnimationCurve
     {
         public readonly List<bool> Values;

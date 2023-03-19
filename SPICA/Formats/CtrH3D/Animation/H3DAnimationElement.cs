@@ -1,12 +1,10 @@
-﻿using Newtonsoft.Json;
-using SPICA.Formats.Common;
+﻿using SPICA.Formats.Common;
 using SPICA.Serialization.Attributes;
 
 using System;
 
 namespace SPICA.Formats.CtrH3D.Animation
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
     public class H3DAnimationElement : INamed
     {
         private string _Name;

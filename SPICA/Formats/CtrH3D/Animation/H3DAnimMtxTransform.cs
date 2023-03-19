@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SPICA.Math3D;
+﻿using SPICA.Math3D;
 using SPICA.Serialization.Attributes;
 
 using System.Collections.Generic;
@@ -7,7 +6,6 @@ using System.Linq;
 
 namespace SPICA.Formats.CtrH3D.Animation
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
     public class H3DAnimMtxTransform : H3DAnimationCurve
     {
         public readonly List<Matrix3x4> Frames;

@@ -5,7 +5,6 @@ using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
 using System.IO;
-using System.Linq;
 using System.Numerics;
 
 namespace SPICA.Formats.CtrH3D

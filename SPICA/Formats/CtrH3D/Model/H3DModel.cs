@@ -10,11 +10,8 @@ using System.Collections.Generic;
 
 namespace SPICA.Formats.CtrH3D.Model
 {
-    public class H3DModel : INamed, ICustomSerialization
+    public class H3DModel : INamed
     {
-        [Ignore]
-        public bool IsVisible { get; set; } = true;
-
         public H3DModelFlags  Flags;
         public H3DBoneScaling BoneScaling;
 
@@ -22,20 +19,20 @@ namespace SPICA.Formats.CtrH3D.Model
 
         public Matrix3x4 WorldTransform;
 
-        public H3DDict<H3DMaterial> Materials;
+        public readonly H3DDict<H3DMaterial> Materials;
 
-        public List<H3DMesh> Meshes;
+        public readonly List<H3DMesh> Meshes;
 
-        [Range] public List<H3DMesh> MeshesLayer0;
-        [Range] public List<H3DMesh> MeshesLayer1;
-        [Range] public List<H3DMesh> MeshesLayer2;
-        [Range] public List<H3DMesh> MeshesLayer3;
+        [Range] public readonly List<H3DMesh> MeshesLayer0;
+        [Range] public readonly List<H3DMesh> MeshesLayer1;
+        [Range] public readonly List<H3DMesh> MeshesLayer2;
+        [Range] public readonly List<H3DMesh> MeshesLayer3;
 
-        [IfVersion(CmpOp.Gequal, 7)] public List<H3DSubMeshCulling> SubMeshCullings;
+        [IfVersion(CmpOp.Gequal, 7)] public readonly List<H3DSubMeshCulling> SubMeshCullings;
 
-        public H3DDict<H3DBone> Skeleton;
+        public readonly H3DDict<H3DBone> Skeleton;
 
-        public List<bool> MeshNodesVisibility;
+        public readonly List<bool> MeshNodesVisibility;
 
         private string _Name;
 
@@ -74,28 +71,6 @@ namespace SPICA.Formats.CtrH3D.Model
             MeshNodesTree = new H3DPatriciaTree();
 
             UserDefinedAddress = 0; //SBZ, set by program on 3DS
-        }
-
-        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
-        {
-            var pos = Deserializer.BaseStream.Position;
-
-            for (int i = 0; i < Meshes.Count; i++)
-            {
-                if (Meshes[i].SubMeshes.Count == 0)
-                {
-                    var subMeshCulling = SubMeshCullings[i];
-                    var maxIndex = subMeshCulling.MaxIndex;
-                    Meshes[i].LoadRawBuffer(Deserializer, maxIndex);
-                }
-            }
-
-            Deserializer.Reader.BaseStream.Seek(pos, System.IO.SeekOrigin.Begin);
-        }
-
-        bool ICustomSerialization.Serialize(BinarySerializer Serializer)
-        {
-            return false;
         }
 
         public void AddMesh(H3DMesh Mesh)

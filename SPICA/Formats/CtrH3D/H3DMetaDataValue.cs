@@ -70,7 +70,7 @@ namespace SPICA.Formats.CtrH3D
                 throw new ArgumentException($"You must specify at least one value!");
             }
 
-            _Name = $"{Name}";
+            _Name = Name;
 
             this.Type = Type;
 

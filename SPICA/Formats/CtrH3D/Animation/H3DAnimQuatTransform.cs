@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SPICA.Math3D;
+﻿using SPICA.Math3D;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
@@ -12,7 +11,6 @@ using System.Numerics;
 
 namespace SPICA.Formats.CtrH3D.Animation
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
     public class H3DAnimQuatTransform : ICustomSerialization
     {
         private H3DAnimQuatTransformFlags Flags;

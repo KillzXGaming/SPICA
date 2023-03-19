@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using SPICA.Serialization;
+﻿using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrH3D.Animation
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
     public class H3DAnimFloat : ICustomSerialization
     {
         [Ignore] private H3DFloatKeyFrameGroup _Value;

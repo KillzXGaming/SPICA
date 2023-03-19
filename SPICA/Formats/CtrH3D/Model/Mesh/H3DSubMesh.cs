@@ -83,9 +83,9 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
         public H3DSubMesh(ushort[] Indices, ushort[] BoneIndices, H3DSubMeshSkinning Skinning) : this()
         {
-            this.Indices     = Indices;
+            this.Indices = Indices;
             this.BoneIndices = BoneIndices;
-            this.Skinning    = Skinning;
+            this.Skinning = Skinning;
         }
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
@@ -93,7 +93,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             PICACommandReader Reader = new PICACommandReader(Commands);
 
             uint BufferAddress = 0;
-            uint BufferCount   = 0;
+            uint BufferCount = 0;
 
             while (Reader.HasCommand)
             {
@@ -103,9 +103,9 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
                 switch (Cmd.Register)
                 {
-                    case PICARegister.GPUREG_VSH_BOOLUNIFORM:    BoolUniforms  = (ushort)Param; break;
-                    case PICARegister.GPUREG_INDEXBUFFER_CONFIG: BufferAddress =         Param; break;
-                    case PICARegister.GPUREG_NUMVERTICES:        BufferCount   =         Param; break;
+                    case PICARegister.GPUREG_VSH_BOOLUNIFORM: BoolUniforms = (ushort)Param; break;
+                    case PICARegister.GPUREG_INDEXBUFFER_CONFIG: BufferAddress = Param; break;
+                    case PICARegister.GPUREG_NUMVERTICES: BufferCount = Param; break;
                     case PICARegister.GPUREG_PRIMITIVE_CONFIG:
                         PrimitiveMode = (PICAPrimitiveMode)(Param >> 8);
                         break;
@@ -113,7 +113,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             }
 
             bool Is16BitsIdx = (BufferAddress >> 31) != 0;
-            long Position    = Deserializer.BaseStream.Position;
+            long Position = Deserializer.BaseStream.Position;
 
             Indices = new ushort[BufferCount];
 
@@ -190,10 +190,9 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
 
             Serializer.Sections[(uint)H3DSectionId.RawData].Values.Add(new RefValue()
             {
-                Parent   = this,
-                Value    = Data,
-                Position = Position,
-                Padding = 0x10,
+                Parent = this,
+                Value = Data,
+                Position = Position
             });
         }
     }
