@@ -1,13 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-namespace SPICA.PICA.Commands
+﻿namespace SPICA.PICA.Commands
 {
     public struct PICATexEnvScale
     {
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICATextureCombinerScale Color;
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICATextureCombinerScale Alpha;
 
         public PICATexEnvScale(uint Param)

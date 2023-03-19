@@ -11,7 +11,7 @@ namespace SPICA.Serialization.Attributes
         public TypeChoiceAttribute(uint TypeVal, Type Type)
         {
             this.TypeVal = TypeVal;
-            this.Type    = Type;
+            this.Type = Type;
         }
     }
 }

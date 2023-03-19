@@ -39,11 +39,12 @@ namespace SPICA.PICA.Converters
                         {
                             switch (Attrib.Format)
                             {
-                                case PICAAttributeFormat.Byte:  Elems[Elem] = Reader.ReadSByte();  break;
-                                case PICAAttributeFormat.Ubyte: Elems[Elem] = Reader.ReadByte();   break;
-                                case PICAAttributeFormat.Short: Elems[Elem] = Reader.ReadInt16();  break;
+                                case PICAAttributeFormat.Byte: Elems[Elem] = Reader.ReadSByte(); break;
+                                case PICAAttributeFormat.Ubyte: Elems[Elem] = Reader.ReadByte(); break;
+                                case PICAAttributeFormat.Short: Elems[Elem] = Reader.ReadInt16(); break;
                                 case PICAAttributeFormat.Float: Elems[Elem] = Reader.ReadSingle(); break;
-                            }                        }
+                            }
+                        }
 
                         Vector4 v = new Vector4(Elems[0], Elems[1], Elems[2], Elems[3]);
 
@@ -56,10 +57,10 @@ namespace SPICA.PICA.Converters
 
                         switch (Attrib.Name)
                         {
-                            case PICAAttributeName.Position:  Out.Position  = v; break;
-                            case PICAAttributeName.Normal:    Out.Normal    = v; break;
-                            case PICAAttributeName.Tangent:   Out.Tangent   = v; break;
-                            case PICAAttributeName.Color:     Out.Color     = v; break;
+                            case PICAAttributeName.Position: Out.Position = v; break;
+                            case PICAAttributeName.Normal: Out.Normal = v; break;
+                            case PICAAttributeName.Tangent: Out.Tangent = v; break;
+                            case PICAAttributeName.Color: Out.Color = v; break;
                             case PICAAttributeName.TexCoord0: Out.TexCoord0 = v; break;
                             case PICAAttributeName.TexCoord1: Out.TexCoord1 = v; break;
                             case PICAAttributeName.TexCoord2: Out.TexCoord2 = v; break;
@@ -68,13 +69,13 @@ namespace SPICA.PICA.Converters
                                 Out.Indices[bi++] = (int)v.X; if (Attrib.Elements == 1) break;
                                 Out.Indices[bi++] = (int)v.Y; if (Attrib.Elements == 2) break;
                                 Out.Indices[bi++] = (int)v.Z; if (Attrib.Elements == 3) break;
-                                Out.Indices[bi++] = (int)v.W;                           break;
+                                Out.Indices[bi++] = (int)v.W; break;
 
                             case PICAAttributeName.BoneWeight:
-                                Out.Weights[wi++] =      v.X; if (Attrib.Elements == 1) break;
-                                Out.Weights[wi++] =      v.Y; if (Attrib.Elements == 2) break;
-                                Out.Weights[wi++] =      v.Z; if (Attrib.Elements == 3) break;
-                                Out.Weights[wi++] =      v.W;                           break;
+                                Out.Weights[wi++] = v.X; if (Attrib.Elements == 1) break;
+                                Out.Weights[wi++] = v.Y; if (Attrib.Elements == 2) break;
+                                Out.Weights[wi++] = v.Z; if (Attrib.Elements == 3) break;
+                                Out.Weights[wi++] = v.W; break;
                         }
                     }
 
@@ -96,9 +97,9 @@ namespace SPICA.PICA.Converters
                                         break;
 
                                     case PICAAttributeName.BoneWeight:
-                                        Out.Weights[0] =      Attr.Value.X;
-                                        Out.Weights[1] =      Attr.Value.Y;
-                                        Out.Weights[2] =      Attr.Value.Z;
+                                        Out.Weights[0] = Attr.Value.X;
+                                        Out.Weights[1] = Attr.Value.Y;
+                                        Out.Weights[2] = Attr.Value.Z;
                                         break;
                                 }
                             }
@@ -112,102 +113,37 @@ namespace SPICA.PICA.Converters
             return Output;
         }
 
-        public static int CalculateStride(IEnumerable<PICAAttribute> attributes, bool alignBy4 = false)
+        public static byte[] GetBuffer(IEnumerable<PICAVertex> Vertices, IEnumerable<PICAAttribute> Attributes)
         {
-            int VertexStride = 0;
-            foreach (var att in attributes)
-            {
-                /*
-             * Byte attributes that are not aligned on a 2 bytes boundary (for example, Byte Vector3)
-             * needs to be aligned to a 2 byte boundary, so we insert a 1 byte dummy element to force alignment.
-             * Attributes of the same type doesn't need to be aligned however.
-             * For example:
-             * A Byte Vector3 Normal followed by a Byte Vector4 Color, followed by a Short Vector2 TexCoord is
-             * stored like this: NX NY NZ CR CG CB CA <Padding0> TX TX TY TY
-             */
-                if (att.Format != PICAAttributeFormat.Ubyte &&
-                    att.Format != PICAAttributeFormat.Byte)
-                {
-                    VertexStride += VertexStride & 1;
-                }
-
-                int Size = att.Elements;
-
-                switch (att.Format)
-                {
-                    case PICAAttributeFormat.Short: Size <<= 1; break;
-                    case PICAAttributeFormat.Float: Size <<= 2; break;
-                }
-
-                VertexStride += Size;
-            }
-            VertexStride += VertexStride & 1;
-
-            if (alignBy4)
-            {
-                //Make sure the stride is divisible into 4
-                while (VertexStride % 4 != 0)
-                    VertexStride += 1;
-            }
-            return VertexStride;
-        }
-
-        static int GetStride(PICAAttributeFormat format)
-        {
-            switch (format)
-            {
-                case PICAAttributeFormat.Byte:
-                case PICAAttributeFormat.Ubyte:
-                    return 1;
-                case PICAAttributeFormat.Short:
-                    return 2;
-                case PICAAttributeFormat.Float:
-                    return 4;
-            }
-            return 4;
-        }
-
-        public static byte[] GetBuffer(IEnumerable<PICAVertex> Vertices, IEnumerable<PICAAttribute> Attributes, int stride = 0)
-        {
-            if (stride == 0)
-                stride = CalculateStride(Attributes);
-
             using (MemoryStream MS = new MemoryStream())
             {
                 BinaryWriter Writer = new BinaryWriter(MS);
 
                 foreach (PICAVertex Vertex in Vertices)
                 {
-                    var pos = Writer.BaseStream.Position;
-
                     int bi = 0;
                     int wi = 0;
 
                     foreach (PICAAttribute Attrib in Attributes)
                     {
                         AlignStream(MS, Attrib.Format);
+
                         for (int i = 0; i < Attrib.Elements; i++)
                         {
                             switch (Attrib.Name)
                             {
-                                case PICAAttributeName.Position:   Write(Writer, Attrib, Vertex.Position,  i);  break;
-                                case PICAAttributeName.Normal:     Write(Writer, Attrib, Vertex.Normal,    i);  break;
-                                case PICAAttributeName.Tangent:    Write(Writer, Attrib, Vertex.Tangent,   i);  break;
-                                case PICAAttributeName.Color:      Write(Writer, Attrib, Vertex.Color,     i);  break;
-                                case PICAAttributeName.TexCoord0:  Write(Writer, Attrib, Vertex.TexCoord0, i);  break;
-                                case PICAAttributeName.TexCoord1:  Write(Writer, Attrib, Vertex.TexCoord1, i);  break;
-                                case PICAAttributeName.TexCoord2:  Write(Writer, Attrib, Vertex.TexCoord2, i);  break;
-                                case PICAAttributeName.BoneIndex:  Write(Writer, Attrib, Vertex.Indices[bi++]); break;
+                                case PICAAttributeName.Position: Write(Writer, Attrib, Vertex.Position, i); break;
+                                case PICAAttributeName.Normal: Write(Writer, Attrib, Vertex.Normal, i); break;
+                                case PICAAttributeName.Tangent: Write(Writer, Attrib, Vertex.Tangent, i); break;
+                                case PICAAttributeName.Color: Write(Writer, Attrib, Vertex.Color, i); break;
+                                case PICAAttributeName.TexCoord0: Write(Writer, Attrib, Vertex.TexCoord0, i); break;
+                                case PICAAttributeName.TexCoord1: Write(Writer, Attrib, Vertex.TexCoord1, i); break;
+                                case PICAAttributeName.TexCoord2: Write(Writer, Attrib, Vertex.TexCoord2, i); break;
+                                case PICAAttributeName.BoneIndex: Write(Writer, Attrib, Vertex.Indices[bi++]); break;
                                 case PICAAttributeName.BoneWeight: Write(Writer, Attrib, Vertex.Weights[wi++]); break;
 
-								default: Write(Writer, Attrib, 0); break;
+                                default: Write(Writer, Attrib, 0); break;
                             }
-                        }
-                    }
-                    if (stride != 0)
-                    {
-                        while (Writer.BaseStream.Position < pos + stride) {
-                            Writer.Write((byte)0);
                         }
                     }
                 }
@@ -231,7 +167,7 @@ namespace SPICA.PICA.Converters
         {
             Value /= Attrib.Scale;
 
-            if (Attrib.Format != PICAAttributeFormat.Float && Attrib.Name != PICAAttributeName.BoneIndex)
+            if (Attrib.Format != PICAAttributeFormat.Float)
             {
                 //Due to float lack of precision it's better to round the number,
                 //because directly casting it will always use the lowest number that
@@ -241,10 +177,10 @@ namespace SPICA.PICA.Converters
 
             switch (Attrib.Format)
             {
-                case PICAAttributeFormat.Byte:  Writer.Write((sbyte)Value); break;
-                case PICAAttributeFormat.Ubyte: Writer.Write((byte)Value);  break;
+                case PICAAttributeFormat.Byte: Writer.Write((sbyte)Value); break;
+                case PICAAttributeFormat.Ubyte: Writer.Write((byte)Value); break;
                 case PICAAttributeFormat.Short: Writer.Write((short)Value); break;
-                case PICAAttributeFormat.Float: Writer.Write(Value);        break;
+                case PICAAttributeFormat.Float: Writer.Write(Value); break;
             }
         }
 

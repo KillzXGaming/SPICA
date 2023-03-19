@@ -7,8 +7,6 @@ namespace SPICA.Serialization.Attributes
     {
         public uint SectionId;
 
-        public int Padding = 0;
-
         public SectionAttribute(uint SectionId)
         {
             this.SectionId = SectionId;

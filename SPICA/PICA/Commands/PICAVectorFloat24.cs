@@ -46,6 +46,8 @@ namespace SPICA.PICA.Commands
             this.W = W;
         }
 
+        public PICAVectorFloat24(Vector4 Vector) : this(Vector.X, Vector.Y, Vector.Z, Vector.W) { }
+
         public override bool Equals(object obj)
         {
             return obj is PICAVectorFloat24 && (PICAVectorFloat24)obj == this;
@@ -118,9 +120,9 @@ namespace SPICA.PICA.Commands
             uint WZ = GetWord24(Z);
             uint WW = GetWord24(W);
 
-            Word0 = (WW <<  8) | (WZ >> 16);
-            Word1 = (WZ << 16) | (WY >>  8);
-            Word2 = (WY << 24) | (WX >>  0);
+            Word0 = (WW << 8) | (WZ >> 16);
+            Word1 = (WZ << 16) | (WY >> 8);
+            Word2 = (WY << 24) | (WX >> 0);
         }
 
         internal static float GetFloat24(uint Value)
@@ -133,7 +135,7 @@ namespace SPICA.PICA.Commands
                 uint Exponent = ((Value >> 16) & 0x7f) + 64;
                 uint SignBit = (Value >> 23) & 1;
 
-                Float  = Mantissa << 7;
+                Float = Mantissa << 7;
                 Float |= Exponent << 23;
                 Float |= SignBit << 31;
             }
@@ -155,7 +157,7 @@ namespace SPICA.PICA.Commands
                 uint Exponent = ((Word >> 23) & 0xff) - 64;
                 uint SignBit = Word >> 31;
 
-                Word  = Mantissa >> 7;
+                Word = Mantissa >> 7;
                 Word |= (Exponent & 0x7f) << 16;
                 Word |= SignBit << 23;
             }

@@ -1,23 +1,14 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-namespace SPICA.PICA.Commands
+﻿namespace SPICA.PICA.Commands
 {
     public struct PICABlendFunction
     {
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendEquation ColorEquation;
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendEquation AlphaEquation;
 
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendFunc ColorSrcFunc;
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendFunc ColorDstFunc;
 
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendFunc AlphaSrcFunc;
-        [JsonConverter(typeof(StringEnumConverter))]
         public PICABlendFunc AlphaDstFunc;
 
         public PICABlendFunction(uint Param)

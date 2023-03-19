@@ -9,8 +9,8 @@
         public ShaderInst3(uint Inst)
         {
             RegId = (Inst >> 22) & 0xf;
-            Dest  = (Inst >> 10) & 0xfff;
-            Count = (Inst >>  0) & 0xff;
+            Dest = (Inst >> 10) & 0xfff;
+            Count = (Inst >> 0) & 0xff;
         }
     }
 }

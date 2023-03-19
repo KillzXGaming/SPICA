@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace SPICA.PICA
@@ -41,6 +42,29 @@ namespace SPICA.PICA
             }
 
             return Output;
+        }
+
+        public byte[] GetByteBuffer()
+        {
+            uint[] Commands = GetBuffer();
+
+            return ToByteBuffer(Commands);
+        }
+
+        public static byte[] ToByteBuffer(uint[] Commands)
+        {
+            byte[] RawCommandBuffer = new byte[Commands.Length * 4];
+            MemoryStream RawCommandStream = new MemoryStream();
+            using (BinaryWriter CommandRewriter = new BinaryWriter(RawCommandStream))
+            {
+                foreach (uint Command in Commands)
+                {
+                    CommandRewriter.Write(Command);
+                }
+            }
+            RawCommandBuffer = RawCommandStream.ToArray();
+            RawCommandStream.Close();
+            return RawCommandBuffer;
         }
 
         public void SetCommand(PICARegister Register, uint Param, uint Mask = 0xf)

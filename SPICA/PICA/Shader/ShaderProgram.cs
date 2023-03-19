@@ -22,12 +22,12 @@ namespace SPICA.PICA.Shader
 
         public ShaderProgram()
         {
-            BoolUniforms  = new ShaderUniformBool[16];
-            Vec4Uniforms  = new ShaderUniformVec4[96];
+            BoolUniforms = new ShaderUniformBool[16];
+            Vec4Uniforms = new ShaderUniformVec4[96];
             IVec4Uniforms = new ShaderUniformVec4[4];
 
-            InitArray(BoolUniforms,  "uniform_bool");
-            InitArray(Vec4Uniforms,  "uniform_float");
+            InitArray(BoolUniforms, "uniform_bool");
+            InitArray(Vec4Uniforms, "uniform_float");
             InitArray(IVec4Uniforms, "uniform_int");
 
             InputRegs = new string[16];

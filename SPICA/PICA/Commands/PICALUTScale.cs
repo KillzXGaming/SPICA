@@ -18,12 +18,12 @@ namespace SPICA.PICA.Commands
         {
             switch (Scale)
             {
-                case PICALUTScale.One:     return 1;
-                case PICALUTScale.Two:     return 2;
-                case PICALUTScale.Four:    return 4;
-                case PICALUTScale.Eight:   return 8;
+                case PICALUTScale.One: return 1;
+                case PICALUTScale.Two: return 2;
+                case PICALUTScale.Four: return 4;
+                case PICALUTScale.Eight: return 8;
                 case PICALUTScale.Quarter: return 0.25f;
-                case PICALUTScale.Half:    return 0.5f;
+                case PICALUTScale.Half: return 0.5f;
 
                 default: throw new ArgumentException("Invalid Scale value!");
             }

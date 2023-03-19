@@ -1,16 +1,15 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SPICA.PICA.Commands;
+﻿using SPICA.PICA.Commands;
 
 using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 namespace SPICA.PICA.Converters
 {
-    public static class TextureConverter
+    static class TextureConverter
     {
-        public static int[] FmtBPP = new int[] { 32, 24, 16, 16, 16, 16, 16, 8, 8, 8, 4, 4, 4, 8 };
+        private static int[] FmtBPP = new int[] { 32, 24, 16, 16, 16, 16, 16, 8, 8, 8, 4, 4, 4, 8 };
 
         private static int[] SwizzleLUT =
         {
@@ -47,7 +46,7 @@ namespace SPICA.PICA.Converters
                     {
                         for (int Px = 0; Px < 64; Px++)
                         {
-                            int X =  SwizzleLUT[Px] & 7;
+                            int X = SwizzleLUT[Px] & 7;
                             int Y = (SwizzleLUT[Px] - X) >> 3;
 
                             int OOffs = (TX + X + ((Height - 1 - (TY + Y)) * Width)) * 4;
@@ -157,8 +156,8 @@ namespace SPICA.PICA.Converters
 
         private static void DecodeRGBA5551(byte[] Buffer, int Address, ushort Value)
         {
-            int R = ((Value >>  1) & 0x1f) << 3;
-            int G = ((Value >>  6) & 0x1f) << 3;
+            int R = ((Value >> 1) & 0x1f) << 3;
+            int G = ((Value >> 6) & 0x1f) << 3;
             int B = ((Value >> 11) & 0x1f) << 3;
 
             SetColor(Buffer, Address, (Value & 1) * 0xff,
@@ -167,10 +166,23 @@ namespace SPICA.PICA.Converters
                 R | (R >> 5));
         }
 
+        private static void EncodeRGBA5551(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            uint RGBA = GetUInt(Input, InputAddress);
+
+#pragma warning disable CS0675 // Opérateur de bits or utilisé sur un opérande de signe étendu ; effectuez un cast en type plus faible non signé
+            byte ARG = (byte)((((RGBA & 0xFF000000) > 0) ? 1 : 0) | (RGBA >> 2 & 0x3E) | (RGBA >> 5 & 0xC0));
+#pragma warning restore CS0675 // Opérateur de bits or utilisé sur un opérande de signe étendu ; effectuez un cast en type plus faible non signé
+            byte GB = (byte)((RGBA >> 13 & 0x7) | (RGBA >> 16 & 0xF8));
+
+            Output[OutputAddress] = ARG;
+            Output[OutputAddress + 1] = GB;
+        }
+
         private static void DecodeRGB565(byte[] Buffer, int Address, ushort Value)
         {
-            int R = ((Value >>  0) & 0x1f) << 3;
-            int G = ((Value >>  5) & 0x3f) << 2;
+            int R = ((Value >> 0) & 0x1f) << 3;
+            int G = ((Value >> 5) & 0x3f) << 2;
             int B = ((Value >> 11) & 0x1f) << 3;
 
             SetColor(Buffer, Address, 0xff,
@@ -179,16 +191,36 @@ namespace SPICA.PICA.Converters
                 R | (R >> 5));
         }
 
+        private static void EncodeRGB565(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            uint RGB = GetUInt(Input, InputAddress);
+
+            byte RG = (byte)((RGB >> 3 & 0x1f) | (RGB >> 5 & 0xE0));
+            byte GB = (byte)((RGB >> 13 & 0x7) | (RGB >> 16 & 0xF8));
+
+            Output[OutputAddress] = RG;
+            Output[OutputAddress + 1] = GB;
+        }
+
         private static void DecodeRGBA4(byte[] Buffer, int Address, ushort Value)
         {
-            int R = (Value >>  4) & 0xf;
-            int G = (Value >>  8) & 0xf;
+            int R = (Value >> 4) & 0xf;
+            int G = (Value >> 8) & 0xf;
             int B = (Value >> 12) & 0xf;
 
             SetColor(Buffer, Address, (Value & 0xf) | (Value << 4),
                 B | (B << 4),
                 G | (G << 4),
                 R | (R << 4));
+        }
+
+        private static void EncodeRGBA4(byte[] Input, int InputAddress, byte[] Output, int OutputAddress)
+        {
+            byte GB = (byte)((Input[InputAddress + 2] & 0xF0) | (Input[InputAddress + 1] >> 4 & 0x0F));
+            byte AR = (byte)((Input[InputAddress] & 0xF0) | (Input[InputAddress + 3] >> 4 & 0x0F));
+
+            Output[OutputAddress] = AR;
+            Output[OutputAddress + 1] = GB;
         }
 
         private static void SetColor(byte[] Buffer, int Address, int A, int B, int G, int R)
@@ -206,35 +238,17 @@ namespace SPICA.PICA.Converters
                 Buffer[Address + 1] << 8);
         }
 
-        public static byte[] Decode(byte[] Input, int Width, int Height, PICATextureFormat Format)
+        private static uint GetUInt(byte[] Buffer, int Address)
         {
-            byte[] Buffer = DecodeBuffer(Input, Width, Height, Format);
-
-            byte[] Output = new byte[Buffer.Length];
-
-            int Stride = Width * 4;
-
-            for (int Y = 0; Y < Height; Y++)
-            {
-                int IOffs = Stride * Y;
-                int OOffs = Stride * (Height - 1 - Y);
-
-                for (int X = 0; X < Width; X++)
-                {
-                    Output[OOffs + 0] = Buffer[IOffs + 0];
-                    Output[OOffs + 1] = Buffer[IOffs + 1];
-                    Output[OOffs + 2] = Buffer[IOffs + 2];
-                    Output[OOffs + 3] = Buffer[IOffs + 3];
-
-                    IOffs += 4;
-                    OOffs += 4;
-                }
-            }
-
-            return Output;
+            return (uint)(
+                Buffer[Address + 0] << 0 |
+                Buffer[Address + 1] << 8 |
+                Buffer[Address + 2] << 16 |
+                Buffer[Address + 3] << 24
+            );
         }
 
-        public static System.Drawing.Bitmap DecodeBitmap(byte[] Input, int Width, int Height, PICATextureFormat Format)
+        public static Bitmap DecodeBitmap(byte[] Input, int Width, int Height, PICATextureFormat Format)
         {
             byte[] Buffer = DecodeBuffer(Input, Width, Height, Format);
 
@@ -262,266 +276,124 @@ namespace SPICA.PICA.Converters
             return GetBitmap(Output, Width, Height);
         }
 
-        static byte[] FlipData(byte[] Buffer, int Width, int Height)
+        public static byte[] Encode(Bitmap Img, PICATextureFormat Format)
         {
-            byte[] Output = new byte[Buffer.Length];
+            byte[] Input = GetBuffer(Img);
 
-            int Stride = Width * 4;
-
-            for (int Y = 0; Y < Height; Y++)
-            {
-                int IOffs = Stride * Y;
-                int OOffs = Stride * (Height - 1 - Y);
-
-                for (int X = 0; X < Width; X++)
-                {
-                    Output[OOffs + 0] = Buffer[IOffs + 0];
-                    Output[OOffs + 1] = Buffer[IOffs + 1];
-                    Output[OOffs + 2] = Buffer[IOffs + 2];
-                    Output[OOffs + 3] = Buffer[IOffs + 3];
-
-                    IOffs += 4;
-                    OOffs += 4;
-                }
-            }
-            return Output;
-        }
-
-        public static byte[] Encode(Image<Rgba32> Img, PICATextureFormat Format, int mipCount)
-        {
-            var mips = ImageSharpTextureHelper.GenerateMipmaps(Img, (uint)mipCount);
-
-            List<byte[]> mipmaps = new List<byte[]>();
-            mipmaps.Add(Encode(Img, Format));
-            for (int i = 1; i < mipCount; i++)
-            {
-                mipmaps.Add(Encode(mips[i], Format));
-            }
-
-            var mem = new System.IO.MemoryStream();
-            using (var writer = new System.IO.BinaryWriter(mem))
-            {
-                // In PICA all mipmap levels are stored next to each other
-                long addr = 0;
-                for (int i = 0; i < mipCount; i++)
-                {
-                    int width = Math.Max(1, Img.Width >> i);
-                    int height = Math.Max(1, Img.Height >> i);
-
-                    if (addr != writer.BaseStream.Position)
-                        throw new Exception();
-
-                    writer.Seek((int)addr, System.IO.SeekOrigin.Begin);
-                    writer.Write(mipmaps[i]);
-
-                    addr += width * height * FmtBPP[(int)Format] / 8;
-                }
-            }
-            return mem.ToArray();
-        }
-
-        //Much help from encoding thanks to this cx
-        // https://github.com/Cruel/3dstex/blob/master/src/Encoder.cpp
-        public static byte[] Encode(Image<Rgba32> Img, PICATextureFormat Format)
-        {
-            byte[] Input = Img.GetSourceInBytes();
             byte[] Output = new byte[CalculateLength(Img.Width, Img.Height, Format)];
 
             int BPP = FmtBPP[(int)Format] / 8;
             if (BPP == 0)
+            {
                 BPP = 1;
+            }
 
             int OOffs = 0;
 
-            if (Format == PICATextureFormat.ETC1)
-                return ETC1_Encode(Input, Img.Width, Img.Height, Format);  
-            else if (Format == PICATextureFormat.ETC1A4)
+            if (Format == PICATextureFormat.ETC1 ||
+                Format == PICATextureFormat.ETC1A4)
+            {
                 return ETC1_Encode(Input, Img.Width, Img.Height, Format);
+            }
             else
             {
-                var mem = new System.IO.MemoryStream();
-                using (var writer = new System.IO.BinaryWriter(mem))
+                for (int TY = 0; TY < Img.Height; TY += 8)
                 {
-                    for (int TY = 0; TY < Img.Height; TY += 8)
+                    for (int TX = 0; TX < Img.Width; TX += 8)
                     {
-                        for (int TX = 0; TX < Img.Width; TX += 8)
+                        for (int Px = 0; Px < 64; Px++)
                         {
-                            for (int Px = 0; Px < 64; Px++)
+                            int X = SwizzleLUT[Px] & 7;
+                            int Y = (SwizzleLUT[Px] - X) >> 3;
+
+                            int IOffs = (TX + X + ((TY + Y) * Img.Width)) * 4;
+
+                            switch (Format)
                             {
-                                int X = SwizzleLUT[Px] & 7;
-                                int Y = (SwizzleLUT[Px] - X) >> 3;
+                                case PICATextureFormat.RGB8:
+                                    Array.Copy(Input, IOffs, Output, OOffs, 3);
 
-                                int IOffs = (TX + X + ((TY + Y) * Img.Width)) * 4;
+                                    break;
+                                case PICATextureFormat.RGBA8:
+                                    Output[OOffs + 0] = Input[IOffs + 3];
+                                    Output[OOffs + 1] = Input[IOffs + 0];
+                                    Output[OOffs + 2] = Input[IOffs + 1];
+                                    Output[OOffs + 3] = Input[IOffs + 2];
 
-                                switch (Format)
-                                {
-                                    case PICATextureFormat.RGBA8:
-                                        writer.Write(Input[IOffs + 3]);
-                                        writer.Write(Input[IOffs + 2]);
-                                        writer.Write(Input[IOffs + 1]);
-                                        writer.Write(Input[IOffs + 0]);
-                                        break;
-                                    case PICATextureFormat.RGB8:
-                                        writer.Write(Input[IOffs + 2]);
-                                        writer.Write(Input[IOffs + 1]);
-                                        writer.Write(Input[IOffs + 0]);
-                                        break;
-                                    case PICATextureFormat.RGB565:
-                                        {
-                                            ushort R = (ushort)(Convert8To5(Input[IOffs + 2]));
-                                            ushort G = (ushort)(Convert8To6(Input[IOffs + 1]) << 5);
-                                            ushort B = (ushort)(Convert8To5(Input[IOffs + 0]) << 11);
+                                    break;
+                                case PICATextureFormat.RGB565:
+                                    EncodeRGB565(Input, IOffs, Output, OOffs);
 
-                                            writer.Write((ushort)(R | G | B));
-                                        }
-                                        break;
-                                    case PICATextureFormat.RGBA4:
-                                        {
-                                            ushort R = (ushort)(Convert8To4(Input[IOffs + 2]) << 4);
-                                            ushort G = (ushort)(Convert8To4(Input[IOffs + 1]) << 8);
-                                            ushort B = (ushort)(Convert8To4(Input[IOffs + 0]) << 12);
-                                            ushort A = (ushort)(Convert8To4(Input[IOffs + 3]));
+                                    break;
+                                case PICATextureFormat.L8:
+                                    Output[OOffs] = GetLuminosity(Input, IOffs);
 
-                                            writer.Write((ushort)(R | G | B | A));
-                                        }
-                                        break;
-                                    case PICATextureFormat.RGBA5551:
-                                        {
-                                            ushort R = (ushort)(Convert8To5(Input[IOffs + 2]) << 1);
-                                            ushort G = (ushort)(Convert8To5(Input[IOffs + 1]) << 6);
-                                            ushort B = (ushort)(Convert8To5(Input[IOffs + 0]) << 11);
-                                            ushort A = (ushort)(Convert8To1(Input[IOffs + 3]));
+                                    break;
+                                case PICATextureFormat.A8:
+                                    Output[OOffs] = Input[IOffs + 3];
 
-                                            writer.Write((ushort)(R | G | B | A));
-                                        }
-                                        break;
-                                    case PICATextureFormat.A8:
-                                        writer.Write(Input[IOffs]);
-                                        break;
-                                    case PICATextureFormat.L4:
-                                        {
-                                            int ActualOOffs = OOffs / 2;
-                                            int Shift = (OOffs & 1) * 4;
-                                            Output[ActualOOffs] |= (byte)((GetLuminosity(Input, IOffs) >> 4 & 0xF) << Shift);
-                                        }
-                                        break;
-                                    case PICATextureFormat.A4:
-                                        {
-                                            int ActualOOffs = OOffs / 2;
-                                            int Shift = (OOffs & 1) * 4;
-                                            Output[ActualOOffs] |= (byte)((Input[IOffs + 3] >> 4 & 0xF) << Shift);
-                                        }
-                                        break;
-                                    case PICATextureFormat.L8:
-                                        writer.Write(ConvertBRG8ToL(
-                                            new byte[]
-                                            {
-                                                Input[IOffs + 0],
-                                                Input[IOffs + 1],
-                                                Input[IOffs + 2]
-                                            }));
-                                        break;
-                                    case PICATextureFormat.LA8:
-                                        writer.Write(Input[IOffs + 3]);
-                                        writer.Write(ConvertBRG8ToL(
-                                            new byte[]
-                                            {
-                                                Input[IOffs + 0],
-                                                Input[IOffs + 1],
-                                                Input[IOffs + 2]
-                                            }));
-                                        break;
-                                    case PICATextureFormat.HiLo8: //RG8
-                                        {
-                                            writer.Write(Input[IOffs + 2]);
-                                            writer.Write(Input[IOffs + 1]);
-                                        }
-                                        break;
-                                    default: throw new NotImplementedException();
-                                }
-                                OOffs += BPP;
+                                    break;
+                                case PICATextureFormat.LA8:
+                                    Output[OOffs] = GetLuminosity(Input, IOffs);
+                                    Output[OOffs + 1] = Input[IOffs + 3];
+
+                                    break;
+                                case PICATextureFormat.HiLo8:
+                                    Array.Copy(Input, IOffs, Output, OOffs, 2);
+                                    break;
+                                case PICATextureFormat.RGBA4:
+                                    EncodeRGBA4(Input, IOffs, Output, OOffs);
+
+                                    break;
+                                case PICATextureFormat.RGBA5551:
+                                    EncodeRGBA5551(Input, IOffs, Output, OOffs);
+
+                                    break;
+                                case PICATextureFormat.L4:
+                                    {
+                                        int ActualOOffs = OOffs / 2;
+                                        int Shift = (OOffs & 1) * 4;
+                                        Output[ActualOOffs] |= (byte)((GetLuminosity(Input, IOffs) >> 4 & 0xF) << Shift);
+                                    }
+                                    break;
+                                case PICATextureFormat.A4:
+                                    {
+                                        int ActualOOffs = OOffs / 2;
+                                        int Shift = (OOffs & 1) * 4;
+                                        Output[ActualOOffs] |= (byte)((Input[IOffs + 3] >> 4 & 0xF) << Shift);
+                                    }
+                                    break;
+                                case PICATextureFormat.LA4:
+                                    Output[OOffs] = (byte)(GetLuminosity(Input, IOffs) & 0xF0 | (Input[IOffs + 3] >> 4 & 0xf));
+                                    break;
+
+                                default: throw new NotImplementedException();
                             }
+
+                            OOffs += BPP;
                         }
                     }
                 }
-
-                if (Format == PICATextureFormat.L4 || Format == PICATextureFormat.A4)
-                    return Output;
-
-                return mem.ToArray();
             }
+
+            return Output;
         }
+
+        private static int[,] Modulation_Table = new[,] {
+            { 2, 8, -2, -8 },
+            { 5, 17, -5, -17 },
+            { 9, 29, -9, -29 },
+            { 13, 42, -13, -42 },
+            { 18, 60, -18, -60 },
+            { 24, 80, -24, -80 },
+            { 33, 106, -33, -106 },
+            { 47, 183, -47, -183 }
+        };
 
         public static byte GetLuminosity(byte[] RGBA, int IOffs)
         {
             return (byte)((RGBA[IOffs] + RGBA[IOffs + 1] + RGBA[IOffs + 2]) / 3);
         }
-
-        public static byte[] encodeL8(int color)
-        {
-            return new byte[] { (byte)(((0x4CB2 * (color & 0xFF) + 0x9691 * ((color >> 8) & 0xFF) + 0x1D3E * ((color >> 8) & 0xFF)) >> 16) & 0xFF) };
-        }
-        public static byte[] encodeA8(int color)
-        {
-            return new byte[] { (byte)((color >> 24) & 0xFF) };
-        }
-
-        public static int CalculateTotalSize(int width, int height, int mipCount, PICATextureFormat format)
-        {
-            int size = 0;
-            for (int level = 0; level < mipCount; level++)
-            {
-                int mwidth = Math.Max(1, width >> level);
-                int mheight = Math.Max(1, height >> level);
-                size += TextureConverter.CalculateLength(mwidth, mheight, format);
-            }
-            return size;
-        }
-
-        public static int CalculateLength(int Width, int Height, PICATextureFormat Format)
-        {
-            int Length = (Width * Height * FmtBPP[(int)Format]) / 8;
-
-            if ((Length & 0x7f) != 0)
-            {
-                Length = (Length & ~0x7f) + 0x80;
-            }
-
-            return Length;
-        }
-
-        public static System.Drawing.Bitmap GetBitmap(byte[] Buffer, int Width, int Height)
-        {
-            System.Drawing.Rectangle Rect = new System.Drawing.Rectangle(0, 0, Width, Height);
-
-            System.Drawing.Bitmap Img = new System.Drawing.Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-            System.Drawing.Imaging.BitmapData ImgData = Img.LockBits(Rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, Img.PixelFormat);
-
-            Marshal.Copy(Buffer, 0, ImgData.Scan0, Buffer.Length);
-
-            Img.UnlockBits(ImgData);
-
-            return Img;
-        }
-
-        // Convert helpers from Citra Emulator (citra/src/common/color.h)
-        private static byte Convert8To1(byte val) { return (byte)(val == 0 ? 0 : 1); }
-        private static byte Convert8To4(byte val) { return (byte)(val >> 4); }
-        private static byte Convert8To5(byte val) { return (byte)(val >> 3); }
-        private static byte Convert8To6(byte val) { return (byte)(val >> 2); }
-
-        private static byte ConvertBRG8ToL(byte[] bytes)
-        {
-            byte L = (byte)(bytes[0] * 0.0722f);
-            L += (byte)(bytes[1] * 0.7152f);
-            L += (byte)(bytes[2] * 0.2126f);
-
-            return L;
-        }
-
-        #region ETC1 Encoding
-
 
         public static byte[] ETC1_Encode(byte[] Data, int Width, int Height, PICATextureFormat format)
         {
@@ -545,9 +417,9 @@ namespace SPICA.PICA.Converters
                             int Out_Offset = ((TX * 4) + X + ((((TY * 4) + Y)) * Width)) * 4;
                             int Image_Offset = ((Tile_X * 4) + X + (((Tile_Y * 4) + Y) * Width)) * 4;
 
-                            Out[Out_Offset] = Data[Image_Offset + 0];
+                            Out[Out_Offset] = Data[Image_Offset + 2];
                             Out[Out_Offset + 1] = Data[Image_Offset + 1];
-                            Out[Out_Offset + 2] = Data[Image_Offset + 2];
+                            Out[Out_Offset + 2] = Data[Image_Offset];
                             if (format == PICATextureFormat.ETC1A4)
                                 Out[Out_Offset + 3] = Data[Image_Offset + 3];
                             else
@@ -1037,6 +909,18 @@ namespace SPICA.PICA.Converters
             return Tile_Scramble;
         }
 
+        public static int CalculateLength(int Width, int Height, PICATextureFormat Format)
+        {
+            int Length = (Width * Height * FmtBPP[(int)Format]) / 8;
+
+            if ((Length & 0x7f) != 0)
+            {
+                Length = (Length & ~0x7f) + 0x80;
+            }
+
+            return Length;
+        }
+
         private static sbyte Signed_Byte(byte Byte_To_Convert)
         {
             if ((Byte_To_Convert < 0x80))
@@ -1054,17 +938,34 @@ namespace SPICA.PICA.Converters
                 return Convert.ToByte(Value & 0xFF);
         }
 
-        private static int[,] Modulation_Table = new[,] {
-            { 2, 8, -2, -8 },
-            { 5, 17, -5, -17 },
-            { 9, 29, -9, -29 },
-            { 13, 42, -13, -42 },
-            { 18, 60, -18, -60 },
-            { 24, 80, -24, -80 },
-            { 33, 106, -33, -106 },
-            { 47, 183, -47, -183 }
-        };
+        public static Bitmap GetBitmap(byte[] Buffer, int Width, int Height)
+        {
+            Rectangle Rect = new Rectangle(0, 0, Width, Height);
 
-        #endregion
+            Bitmap Img = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
+
+            BitmapData ImgData = Img.LockBits(Rect, ImageLockMode.WriteOnly, Img.PixelFormat);
+
+            Marshal.Copy(Buffer, 0, ImgData.Scan0, Buffer.Length);
+
+            Img.UnlockBits(ImgData);
+
+            return Img;
+        }
+
+        public static byte[] GetBuffer(Bitmap Img)
+        {
+            Rectangle Rect = new Rectangle(0, 0, Img.Width, Img.Height);
+
+            BitmapData ImgData = Img.LockBits(Rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+
+            byte[] Output = new byte[ImgData.Stride * Img.Height];
+
+            Marshal.Copy(ImgData.Scan0, Output, 0, Output.Length);
+
+            Img.UnlockBits(ImgData);
+
+            return Output;
+        }
     }
 }

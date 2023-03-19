@@ -13,8 +13,8 @@
             Dest = (Inst >> 21) & 0x1f;
             Idx2 = (Inst >> 19) & 0x3;
             Src1 = (Inst >> 14) & 0x1f;
-            Src2 = (Inst >>  7) & 0x7f;
-            Desc = (Inst >>  0) & 0x7f;
+            Src2 = (Inst >> 7) & 0x7f;
+            Desc = (Inst >> 0) & 0x7f;
         }
     }
 }

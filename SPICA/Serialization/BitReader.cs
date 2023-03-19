@@ -7,7 +7,7 @@ namespace SPICA.Serialization
         private BinaryReader Reader;
 
         private uint Bools;
-        private int  Index;
+        private int Index;
 
         public BitReader(BinaryReader Reader)
         {

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-namespace SPICA.PICA.Commands
+﻿namespace SPICA.PICA.Commands
 {
     public class PICATexEnvOperand
     {

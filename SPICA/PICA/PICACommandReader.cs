@@ -32,8 +32,8 @@ namespace SPICA.PICA
 
             public void SetIndexCommand(uint Cmd)
             {
-                UniformIndex  = (Cmd & 0xff) << 2;
-                Uniform32Bits = (Cmd >> 31)  != 0;
+                UniformIndex = (Cmd & 0xff) << 2;
+                Uniform32Bits = (Cmd >> 31) != 0;
             }
 
             public void SetValueParameters(uint[] Params)
@@ -85,7 +85,7 @@ namespace SPICA.PICA
             public Dictionary<uint, Vector4> GetAllUsedUniforms()
             {
                 Dictionary<uint, Vector4> Output = new Dictionary<uint, Vector4>();
-                
+
                 foreach (uint UIdx in UsedUniforms)
                 {
                     Output.Add(UIdx, Uniforms[UIdx]);
@@ -113,10 +113,10 @@ namespace SPICA.PICA
             while (Index < Cmds.Length)
             {
                 uint Parameter = Cmds[Index++];
-                uint Command   = Cmds[Index++];
+                uint Command = Cmds[Index++];
 
-                uint Id          = (Command >>  0) & 0xffff;
-                uint Mask        = (Command >> 16) & 0xf;
+                uint Id = (Command >> 0) & 0xffff;
+                uint Mask = (Command >> 16) & 0xf;
                 uint ExtraParams = (Command >> 20) & 0x7ff;
                 bool Consecutive = (Command >> 31) != 0;
 
@@ -126,9 +126,9 @@ namespace SPICA.PICA
                     {
                         PICACommand Cmd = new PICACommand()
                         {
-                            Register   = (PICARegister)Id++,
+                            Register = (PICARegister)Id++,
                             Parameters = new uint[] { Parameter },
-                            Mask       = Mask
+                            Mask = Mask
                         };
 
                         CheckVtxUniformsCmd(Cmd);
@@ -153,9 +153,9 @@ namespace SPICA.PICA
 
                     PICACommand Cmd = new PICACommand()
                     {
-                        Register   = (PICARegister)Id,
+                        Register = (PICARegister)Id,
                         Parameters = Parameters.ToArray(),
-                        Mask       = Mask
+                        Mask = Mask
                     };
 
                     CheckVtxUniformsCmd(Cmd);

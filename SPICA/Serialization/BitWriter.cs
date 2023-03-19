@@ -7,7 +7,7 @@ namespace SPICA.Serialization
         private BinaryWriter Writer;
 
         private uint Bools;
-        private int  Index;
+        private int Index;
 
         public BitWriter(BinaryWriter Writer)
         {

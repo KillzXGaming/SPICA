@@ -1,6 +1,4 @@
-﻿using SPICA.Formats.Common;
-using SPICA.Formats.CtrGfx;
-using SPICA.Math3D;
+﻿using SPICA.Math3D;
 using SPICA.Serialization.Attributes;
 using SPICA.Serialization.Serializer;
 
@@ -22,7 +20,7 @@ namespace SPICA.Serialization
         private struct ObjectInfo
         {
             public uint Position;
-            public int  Length;
+            public int Length;
         }
 
         private const uint MainSection = 0;
@@ -35,11 +33,8 @@ namespace SPICA.Serialization
 
         public readonly List<long> Pointers;
 
-        private bool IsGfx = false;
-
-        public BinarySerializer(Stream BaseStream, SerializationOptions Options, bool isGfx = false) : base(BaseStream, Options)
+        public BinarySerializer(Stream BaseStream, SerializationOptions Options) : base(BaseStream, Options)
         {
-            IsGfx = isGfx;
             Writer = new BinaryWriter(BaseStream);
 
             TypeSections = new Dictionary<Type, Section>();
@@ -74,11 +69,11 @@ namespace SPICA.Serialization
 
             foreach (KeyValuePair<uint, Section> KV in Sections)
             {
-                WriteSection(KV.Key, KV.Value);
+                WriteSection(KV.Value);
             }
         }
 
-        private void WriteSection(uint sectionID, Section Section)
+        private void WriteSection(Section Section)
         {
             //Sort
             if (Section.Comparer != null)
@@ -99,34 +94,15 @@ namespace SPICA.Serialization
 
             WriteSection(Section.Values);
 
-            //String table
-            if (IsGfx && (GfxSectionId)sectionID == GfxSectionId.Strings)
-            {
-                Align(128);
-                Writer.Write(new byte[8]);
-            }
-
             //Set section position and lengths, where:
             //Length is the data length, and length with header is
             //data length + header length.
             //Position is the header position (or data position if it doesn't have a header).
-            Section.Length           = (int)(BaseStream.Position - Section.Position);
+            Section.Length = (int)(BaseStream.Position - Section.Position);
             Section.LengthWithHeader = (int)(BaseStream.Position - HeaderPosition);
-            Section.HeaderLength     = (int)(Section.Position    - HeaderPosition);
+            Section.HeaderLength = (int)(Section.Position - HeaderPosition);
 
             Align(Section.Padding);
-        }
-
-        public void AlignBytes(BinaryWriter writer, int alignment, byte value = 0x00)
-        {
-            var startPos = writer.BaseStream.Position;
-            long position = writer.Seek((-(int)writer.BaseStream.Position % alignment + alignment) % alignment, SeekOrigin.Current);
-
-            writer.Seek((int)startPos, System.IO.SeekOrigin.Begin);
-            while (writer.BaseStream.Position != position)
-            {
-                writer.Write(value);
-            }
         }
 
         private RefValue CurrentValue;
@@ -162,16 +138,16 @@ namespace SPICA.Serialization
             {
                 switch (Type.GetTypeCode(Type))
                 {
-                    case TypeCode.UInt64:  Writer.Write((ulong)Value);          break;
-                    case TypeCode.UInt32:  Writer.Write((uint)Value);           break;
-                    case TypeCode.UInt16:  Writer.Write((ushort)Value);         break;
-                    case TypeCode.Byte:    Writer.Write((byte)Value);           break;
-                    case TypeCode.Int64:   Writer.Write((long)Value);           break;
-                    case TypeCode.Int32:   Writer.Write((int)Value);            break;
-                    case TypeCode.Int16:   Writer.Write((short)Value);          break;
-                    case TypeCode.SByte:   Writer.Write((sbyte)Value);          break;
-                    case TypeCode.Single:  Writer.Write((float)Value);          break;
-                    case TypeCode.Double:  Writer.Write((double)Value);         break;
+                    case TypeCode.UInt64: Writer.Write((ulong)Value); break;
+                    case TypeCode.UInt32: Writer.Write((uint)Value); break;
+                    case TypeCode.UInt16: Writer.Write((ushort)Value); break;
+                    case TypeCode.Byte: Writer.Write((byte)Value); break;
+                    case TypeCode.Int64: Writer.Write((long)Value); break;
+                    case TypeCode.Int32: Writer.Write((int)Value); break;
+                    case TypeCode.Int16: Writer.Write((short)Value); break;
+                    case TypeCode.SByte: Writer.Write((sbyte)Value); break;
+                    case TypeCode.Single: Writer.Write((float)Value); break;
+                    case TypeCode.Double: Writer.Write((double)Value); break;
                     case TypeCode.Boolean: Writer.Write((bool)Value ? 1u : 0u); break;
                 }
             }
@@ -227,7 +203,7 @@ namespace SPICA.Serialization
                 ObjPointers.Add(Value, new ObjectInfo()
                 {
                     Position = (uint)Position,
-                    Length   = (int)(BaseStream.Position - Position)
+                    Length = (int)(BaseStream.Position - Position)
                 });
             }
         }
@@ -242,8 +218,8 @@ namespace SPICA.Serialization
                 ? Type.GetElementType()
                 : Type.GetGenericArguments()[0];
 
-            bool IsBool  = Type == typeof(bool);
-            bool Inline  = Type.IsDefined(typeof(InlineAttribute));
+            bool IsBool = Type == typeof(bool);
+            bool Inline = Type.IsDefined(typeof(InlineAttribute));
             bool IsValue = Type.IsValueType || Type.IsEnum || Inline;
 
             BitWriter BW = new BitWriter(Writer);
@@ -254,8 +230,8 @@ namespace SPICA.Serialization
                 {
                     RefValue Ref = new RefValue()
                     {
-                        Value     = Value,
-                        Position  = BaseStream.Position,
+                        Value = Value,
+                        Position = BaseStream.Position,
                         HasLength = IsList(Type)
                     };
 
@@ -278,14 +254,11 @@ namespace SPICA.Serialization
 
         private void WriteValue(RefValue Ref)
         {
-            FieldInfo Info   = Ref.Info;
-            object    Parent = Ref.Parent;
-            object    Value  = Ref.Value;
-            bool      Range  = Info?.IsDefined(typeof(RangeAttribute)) ?? false;
+            FieldInfo Info = Ref.Info;
+            object Parent = Ref.Parent;
+            object Value = Ref.Value;
+            bool Range = Info?.IsDefined(typeof(RangeAttribute)) ?? false;
             LengthPos LenPos = GetLengthPos(Info);
-
-            if (Ref.Padding != 0)
-                Align(Ref.Padding);
 
             if (Value != null && (!(Value is IList) || ((IList)Value).Count > 0 || Range))
             {
@@ -367,7 +340,7 @@ namespace SPICA.Serialization
             ObjectInfo Output = new ObjectInfo()
             {
                 Position = (uint)BaseStream.Position,
-                Length   = 0
+                Length = 0
             };
 
             if (ObjPointers.ContainsKey(Value))
@@ -379,8 +352,8 @@ namespace SPICA.Serialization
                 //This is used to find lists with segments of already serialized values.
                 //We can avoid storing them again if the same sequence is repeated.
                 uint StartPos = 0;
-                int  EndPos   = 0;
-                int  Matches  = 0;
+                int EndPos = 0;
+                int Matches = 0;
 
                 foreach (object Elem in ((IList)Value))
                 {
@@ -404,7 +377,7 @@ namespace SPICA.Serialization
                 if (Matches > 0 && Matches == ((IList)Value).Count)
                 {
                     Output.Position = StartPos;
-                    Output.Length   = EndPos;
+                    Output.Length = EndPos;
                 }
             }
 
@@ -447,7 +420,7 @@ namespace SPICA.Serialization
 
                     bool Inline;
 
-                    Inline  = Info.IsDefined(typeof(InlineAttribute));
+                    Inline = Info.IsDefined(typeof(InlineAttribute));
                     Inline |= Type.IsDefined(typeof(InlineAttribute));
 
                     if (Type.IsValueType || Type.IsEnum || Inline)
@@ -478,10 +451,10 @@ namespace SPICA.Serialization
 
                         RefValue Ref = new RefValue()
                         {
-                            Parent    = Value,
-                            Info      = Info,
-                            Value     = FieldValue,
-                            Position  = BaseStream.Position,
+                            Parent = Value,
+                            Info = Info,
+                            Value = FieldValue,
+                            Position = BaseStream.Position,
                             HasLength = HasLength,
                             HasTwoPtr = HasTwoPtr
                         };
@@ -502,7 +475,6 @@ namespace SPICA.Serialization
         {
             if (Ref.Info?.IsDefined(typeof(SectionAttribute)) ?? false)
             {
-                Ref.Padding = Ref.Info.GetCustomAttribute<SectionAttribute>().Padding;
                 Sections[Ref.Info.GetCustomAttribute<SectionAttribute>().SectionId].Values.Add(Ref);
             }
             else if (TypeSections.ContainsKey(Type))

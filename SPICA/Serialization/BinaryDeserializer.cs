@@ -24,7 +24,7 @@ namespace SPICA.Serialization
         {
             Reader = new BinaryReader(BaseStream);
 
-            Objects  = new Dictionary<long, object>();
+            Objects = new Dictionary<long, object>();
             ListObjs = new Dictionary<long, object>();
         }
 
@@ -39,16 +39,16 @@ namespace SPICA.Serialization
             {
                 switch (Type.GetTypeCode(Type))
                 {
-                    case TypeCode.UInt64:  return Reader.ReadUInt64();
-                    case TypeCode.UInt32:  return Reader.ReadUInt32();
-                    case TypeCode.UInt16:  return Reader.ReadUInt16();
-                    case TypeCode.Byte:    return Reader.ReadByte();
-                    case TypeCode.Int64:   return Reader.ReadInt64();
-                    case TypeCode.Int32:   return Reader.ReadInt32();
-                    case TypeCode.Int16:   return Reader.ReadInt16();
-                    case TypeCode.SByte:   return Reader.ReadSByte();
-                    case TypeCode.Single:  return Reader.ReadSingle();
-                    case TypeCode.Double:  return Reader.ReadDouble();
+                    case TypeCode.UInt64: return Reader.ReadUInt64();
+                    case TypeCode.UInt32: return Reader.ReadUInt32();
+                    case TypeCode.UInt16: return Reader.ReadUInt16();
+                    case TypeCode.Byte: return Reader.ReadByte();
+                    case TypeCode.Int64: return Reader.ReadInt64();
+                    case TypeCode.Int32: return Reader.ReadInt32();
+                    case TypeCode.Int16: return Reader.ReadInt16();
+                    case TypeCode.SByte: return Reader.ReadSByte();
+                    case TypeCode.Single: return Reader.ReadSingle();
+                    case TypeCode.Double: return Reader.ReadDouble();
                     case TypeCode.Boolean: return Reader.ReadUInt32() != 0;
 
                     default: return null;
@@ -126,8 +126,8 @@ namespace SPICA.Serialization
 
             BitReader BR = new BitReader(Reader);
 
-            bool IsBool  = Type == typeof(bool);
-            bool Inline  = Type.IsDefined(typeof(InlineAttribute));
+            bool IsBool = Type == typeof(bool);
+            bool Inline = Type.IsDefined(typeof(InlineAttribute));
             bool IsValue = Type.IsValueType || Type.IsEnum || Inline;
 
             for (int Index = 0; (Range ? BaseStream.Position : Index) < Length; Index++)
@@ -252,14 +252,14 @@ namespace SPICA.Serialization
 
                     bool Inline;
 
-                    Inline  = Info.IsDefined(typeof(InlineAttribute));
+                    Inline = Info.IsDefined(typeof(InlineAttribute));
                     Inline |= Type.IsDefined(typeof(InlineAttribute));
 
                     object FieldValue;
 
                     if (Type.IsValueType || Type.IsEnum || Inline)
                     {
-                            FieldValue = IsList(Type)
+                        FieldValue = IsList(Type)
                             ? ReadList(Type, Info)
                             : ReadValue(Type);
 
@@ -305,20 +305,20 @@ namespace SPICA.Serialization
         private object ReadReference(Type Type, FieldInfo Info = null)
         {
             uint Address;
-            int  Length;
+            int Length;
 
             if (GetLengthPos(Info) == LengthPos.AfterPtr)
             {
                 Address = ReadPointer();
-                Length  = ReadLength(Type, Info);
+                Length = ReadLength(Type, Info);
             }
             else
             {
-                Length  = ReadLength(Type, Info);
+                Length = ReadLength(Type, Info);
                 Address = ReadPointer();
             }
 
-            bool Range  = Info?.IsDefined(typeof(RangeAttribute))         ?? false;
+            bool Range = Info?.IsDefined(typeof(RangeAttribute)) ?? false;
             bool Repeat = Info?.IsDefined(typeof(RepeatPointerAttribute)) ?? false;
 
             if (Repeat) BaseStream.Seek(4, SeekOrigin.Current);

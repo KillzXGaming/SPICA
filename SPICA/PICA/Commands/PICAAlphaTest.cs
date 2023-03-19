@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-namespace SPICA.PICA.Commands
+﻿namespace SPICA.PICA.Commands
 {
     public struct PICAAlphaTest
     {
@@ -25,7 +22,7 @@ namespace SPICA.PICA.Commands
             uint Param = 0;
 
             Param |= Enabled ? 1u : 0u;
-            
+
             Param |= ((uint)Function & 7) << 4;
 
             Param |= (uint)Reference << 8;

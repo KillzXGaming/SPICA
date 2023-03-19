@@ -11,12 +11,12 @@
 
         public ShaderInst2(uint Inst)
         {
-            RefX   = ((Inst >> 25) & 1) != 0;
-            RefY   = ((Inst >> 24) & 1) != 0;
+            RefX = ((Inst >> 25) & 1) != 0;
+            RefY = ((Inst >> 24) & 1) != 0;
 
             CondOp = (Inst >> 22) & 0x3;
-            Dest   = (Inst >> 10) & 0xfff;
-            Count  = (Inst >>  0) & 0xff;
+            Dest = (Inst >> 10) & 0xfff;
+            Count = (Inst >> 0) & 0xff;
         }
     }
 }

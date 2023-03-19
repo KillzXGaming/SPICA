@@ -25,7 +25,7 @@ namespace SPICA.Serialization
         public BinarySerialization(Stream BaseStream, SerializationOptions Options)
         {
             this.BaseStream = BaseStream;
-            this.Options    = Options;
+            this.Options = Options;
         }
 
         protected IEnumerable<FieldInfo> GetFieldsSorted(Type ObjectType)

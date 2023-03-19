@@ -10,7 +10,7 @@ namespace SPICA.PICA.Shader
 {
     public class ShaderBinary
     {
-        public uint[]  Executable;
+        public uint[] Executable;
         public ulong[] Swizzles;
 
         public readonly List<ShaderProgram> Programs;
@@ -27,21 +27,21 @@ namespace SPICA.PICA.Shader
                 BinaryReader Reader = new BinaryReader(MS);
 
                 uint DVLBMagicNumber = Reader.ReadUInt32();
-                uint DVLECount       = Reader.ReadUInt32();
+                uint DVLECount = Reader.ReadUInt32();
 
                 MS.Seek(DVLECount * 4, SeekOrigin.Current);
 
                 uint DVLPPosition = (uint)MS.Position;
 
-                uint   DVLPMagicNumber      = Reader.ReadUInt32();
-                ushort DVLPVersion          = Reader.ReadUInt16();
-                byte   ShaderType           = Reader.ReadByte();
-                byte   OutRegsInfo          = Reader.ReadByte();
-                uint   ShaderBinaryAddress  = Reader.ReadUInt32() + DVLPPosition;
-                uint   ShaderBinaryCount    = Reader.ReadUInt32();
-                uint   SwizzlesAddress      = Reader.ReadUInt32() + DVLPPosition;
-                uint   SwizzlesCount        = Reader.ReadUInt32();
-                uint   FileNamesPtrsAddress = Reader.ReadUInt32() + DVLPPosition;
+                uint DVLPMagicNumber = Reader.ReadUInt32();
+                ushort DVLPVersion = Reader.ReadUInt16();
+                byte ShaderType = Reader.ReadByte();
+                byte OutRegsInfo = Reader.ReadByte();
+                uint ShaderBinaryAddress = Reader.ReadUInt32() + DVLPPosition;
+                uint ShaderBinaryCount = Reader.ReadUInt32();
+                uint SwizzlesAddress = Reader.ReadUInt32() + DVLPPosition;
+                uint SwizzlesCount = Reader.ReadUInt32();
+                uint FileNamesPtrsAddress = Reader.ReadUInt32() + DVLPPosition;
 
                 for (int i = 0; i < DVLECount; i++)
                 {
@@ -52,32 +52,32 @@ namespace SPICA.PICA.Shader
 
                     uint DVLEPosition = (uint)MS.Position;
 
-                    uint   DVLEMagic        = Reader.ReadUInt32();
-                    ushort DVLEVersion      = Reader.ReadUInt16();
-                    byte   IsGeoShader      = Reader.ReadByte();
-                    byte   DebugFlags       = Reader.ReadByte();
-                    uint   ExeStartOffset   = Reader.ReadUInt32();
-                    uint   ExeEndOffset     = Reader.ReadUInt32();
-                    ushort InputMask        = Reader.ReadUInt16();
-                    ushort OutputMask       = Reader.ReadUInt16();
-                    byte   GeoShaderType    = Reader.ReadByte();
-                    byte   GeoShaderIndex   = Reader.ReadByte();
-                    byte   GeoSubDivSize    = Reader.ReadByte();
-                    byte   GeoVertexCount   = Reader.ReadByte();
-                    uint   ConstTblOffset   = Reader.ReadUInt32() + DVLEPosition;
-                    uint   ConstTblCount    = Reader.ReadUInt32();
-                    uint   LabelTblOffset   = Reader.ReadUInt32() + DVLEPosition;
-                    uint   LabelTblCount    = Reader.ReadUInt32();
-                    uint   OutRegTblOffset  = Reader.ReadUInt32() + DVLEPosition;
-                    uint   OutRegTblCount   = Reader.ReadUInt32();
-                    uint   UniformTblOffset = Reader.ReadUInt32() + DVLEPosition;
-                    uint   UniformTblCount  = Reader.ReadUInt32();
-                    uint   StringsTblOffset = Reader.ReadUInt32() + DVLEPosition;
-                    uint   StringsTblLength = Reader.ReadUInt32();
+                    uint DVLEMagic = Reader.ReadUInt32();
+                    ushort DVLEVersion = Reader.ReadUInt16();
+                    byte IsGeoShader = Reader.ReadByte();
+                    byte DebugFlags = Reader.ReadByte();
+                    uint ExeStartOffset = Reader.ReadUInt32();
+                    uint ExeEndOffset = Reader.ReadUInt32();
+                    ushort InputMask = Reader.ReadUInt16();
+                    ushort OutputMask = Reader.ReadUInt16();
+                    byte GeoShaderType = Reader.ReadByte();
+                    byte GeoShaderIndex = Reader.ReadByte();
+                    byte GeoSubDivSize = Reader.ReadByte();
+                    byte GeoVertexCount = Reader.ReadByte();
+                    uint ConstTblOffset = Reader.ReadUInt32() + DVLEPosition;
+                    uint ConstTblCount = Reader.ReadUInt32();
+                    uint LabelTblOffset = Reader.ReadUInt32() + DVLEPosition;
+                    uint LabelTblCount = Reader.ReadUInt32();
+                    uint OutRegTblOffset = Reader.ReadUInt32() + DVLEPosition;
+                    uint OutRegTblCount = Reader.ReadUInt32();
+                    uint UniformTblOffset = Reader.ReadUInt32() + DVLEPosition;
+                    uint UniformTblCount = Reader.ReadUInt32();
+                    uint StringsTblOffset = Reader.ReadUInt32() + DVLEPosition;
+                    uint StringsTblLength = Reader.ReadUInt32();
 
                     Programs[i].IsGeometryShader = IsGeoShader != 0;
 
-                    Programs[i].MainOffset    = ExeStartOffset;
+                    Programs[i].MainOffset = ExeStartOffset;
                     Programs[i].EndMainOffset = ExeEndOffset;
 
                     for (int ci = 0; ci < ConstTblCount; ci++)
@@ -85,7 +85,7 @@ namespace SPICA.PICA.Shader
                         MS.Seek(ConstTblOffset + ci * 0x14, SeekOrigin.Begin);
 
                         byte Type = (byte)Reader.ReadUInt16();
-                        byte Reg  = (byte)Reader.ReadUInt16();
+                        byte Reg = (byte)Reader.ReadUInt16();
 
                         ShaderUniform Uniform = GetUniform(Programs[i], Reg, Type);
 
@@ -111,7 +111,7 @@ namespace SPICA.PICA.Shader
                     {
                         MS.Seek(LabelTblOffset + li * 0x10, SeekOrigin.Begin);
 
-                        uint Id     = Reader.ReadUInt32();
+                        uint Id = Reader.ReadUInt32();
                         uint Offset = Reader.ReadUInt32();
                         uint Length = Reader.ReadUInt32();
 
@@ -121,10 +121,10 @@ namespace SPICA.PICA.Shader
 
                         Programs[i].Labels.Add(new ShaderLabel()
                         {
-                            Id     = Id,
+                            Id = Id,
                             Offset = Offset,
                             Length = Length,
-                            Name   = Name
+                            Name = Name
                         });
                     }
 
@@ -147,9 +147,9 @@ namespace SPICA.PICA.Shader
                     {
                         MS.Seek(UniformTblOffset + ui * 8, SeekOrigin.Begin);
 
-                        int    NameOffset = Reader.ReadInt32();
-                        ushort StartReg   = Reader.ReadUInt16();
-                        ushort EndReg     = Reader.ReadUInt16();
+                        int NameOffset = Reader.ReadInt32();
+                        ushort StartReg = Reader.ReadUInt16();
+                        ushort EndReg = Reader.ReadUInt16();
 
                         MS.Seek(StringsTblOffset + NameOffset, SeekOrigin.Begin);
 
@@ -167,9 +167,9 @@ namespace SPICA.PICA.Shader
 
                                 if (Uniform != null)
                                 {
-                                    Uniform.Name        = Name;
-                                    Uniform.IsArray     = EndReg != StartReg;
-                                    Uniform.ArrayIndex  = r - StartReg;
+                                    Uniform.Name = Name;
+                                    Uniform.IsArray = EndReg != StartReg;
+                                    Uniform.ArrayIndex = r - StartReg;
                                     Uniform.ArrayLength = (EndReg - StartReg) + 1;
                                 }
                             }
@@ -248,17 +248,17 @@ namespace SPICA.PICA.Shader
         }
 
         public void GetSwizzles(
-            uint         DescIdx,
-            out string   SDst,
+            uint DescIdx,
+            out string SDst,
             out string[] SSrc,
             out string[] SSrcM)
         {
-            SSrc  = new string[3];
+            SSrc = new string[3];
             SSrcM = new string[3];
 
             ulong Swizzle = Swizzles[DescIdx];
 
-            SSrc[0] = GetSwizzle((byte)(Swizzle >>  5));
+            SSrc[0] = GetSwizzle((byte)(Swizzle >> 5));
             SSrc[1] = GetSwizzle((byte)(Swizzle >> 14));
             SSrc[2] = GetSwizzle((byte)(Swizzle >> 23));
 
@@ -279,7 +279,7 @@ namespace SPICA.PICA.Shader
 
             string Plus = HidePlus ? string.Empty : "+";
 
-            Output[0] = ((Swizzle >>  4) & 1) != 0 ? "-" : Plus;
+            Output[0] = ((Swizzle >> 4) & 1) != 0 ? "-" : Plus;
             Output[1] = ((Swizzle >> 13) & 1) != 0 ? "-" : Plus;
             Output[2] = ((Swizzle >> 22) & 1) != 0 ? "-" : Plus;
 

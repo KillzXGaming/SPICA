@@ -12,8 +12,6 @@ namespace SPICA.Serialization.Serializer
         public object Parent;
         public object Value;
 
-        public int Padding = 0;
-
         public long Position;
         public bool HasLength;
         public bool HasTwoPtr;
@@ -32,15 +30,10 @@ namespace SPICA.Serialization.Serializer
 
             Parent = null;
 
-            Position      = -1;
-            HasLength     = false;
-            HasTwoPtr     = false;
+            Position = -1;
+            HasLength = false;
+            HasTwoPtr = false;
             PointerOffset = 0;
-        }
-
-        public override string ToString()
-        {
-            return Parent.ToString() + Value.ToString();
         }
     }
 }
