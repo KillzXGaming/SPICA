@@ -8,9 +8,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SPICA.Formats.CtrGfx.Animation
 {
+    [JsonConverter(typeof(GfxFloatKeyFrameGroupConverter))]
     public class GfxFloatKeyFrameGroup : ICustomSerialization
     {
         private float _StartFrame;
@@ -72,7 +74,7 @@ namespace SPICA.Formats.CtrGfx.Animation
 
         public GfxFloatKeyFrameGroup()
         {
-            Curves.Add(new Curve());
+            this.Curves.Add(new Curve());
         }
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
@@ -290,7 +292,7 @@ namespace SPICA.Formats.CtrGfx.Animation
 
             if (Constant)
             {
-                FrameGrp.Curves[0].KeyFrames.Add(new KeyFrame(0, Deserializer.Reader.ReadSingle()));
+                FrameGrp.KeyFrames.Add(new KeyFrame(0, Deserializer.Reader.ReadSingle()));
             }
             else
             {
@@ -314,6 +316,26 @@ namespace SPICA.Formats.CtrGfx.Animation
             [Ignore] public KeyFrameQuantization Quantization;
 
             [Ignore] public List<KeyFrame> KeyFrames = new List<KeyFrame>();
+        }
+
+
+        // Temp fix. We make curve data on construct with the way this group is interacted with
+        // But json adds this extra curve we do not want
+        public class GfxFloatKeyFrameGroupConverter : JsonConverter<GfxFloatKeyFrameGroup>
+        {
+            public override GfxFloatKeyFrameGroup ReadJson(JsonReader reader, Type objectType, GfxFloatKeyFrameGroup existingValue, bool hasExistingValue, JsonSerializer serializer)
+            {
+                JObject obj = JObject.Load(reader);
+
+                existingValue.Curves = obj["Curves"]?.ToObject<List<Curve>>(serializer) ?? new List<Curve>();
+
+                return existingValue;
+            }
+
+            public override void WriteJson(JsonWriter writer, GfxFloatKeyFrameGroup value, JsonSerializer serializer)
+            {
+                serializer.Serialize(writer, value);
+            }
         }
     }
 }
