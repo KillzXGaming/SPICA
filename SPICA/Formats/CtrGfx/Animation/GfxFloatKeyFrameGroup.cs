@@ -100,13 +100,25 @@ namespace SPICA.Formats.CtrGfx.Animation
                 Curves.Add(curve);
 
                 Deserializer.BaseStream.Seek(pos + i * 4, SeekOrigin.Begin);
+                uint pointer = Deserializer.ReadPointer();
 
-                Deserializer.BaseStream.Seek(Deserializer.ReadPointer(), SeekOrigin.Begin);
+                Deserializer.BaseStream.Seek(pointer, SeekOrigin.Begin);
 
                 curve.StartFrame = Deserializer.Reader.ReadSingle();
                 curve.EndFrame = Deserializer.Reader.ReadSingle();
 
                 uint FormatFlags = Deserializer.Reader.ReadUInt32();
+                if (FormatFlags == 1)
+                {
+                    float constant = Deserializer.Reader.ReadSingle();
+                    curve.Quantization = KeyFrameQuantization.Constant;
+                    curve.KeyFrames.Add(new KeyFrame()
+                    {
+                        Value = constant,
+                    }); 
+                    continue;
+                }
+
                 int KeysCount = Deserializer.Reader.ReadInt32();
                 float InvDuration = Deserializer.Reader.ReadSingle();
 
@@ -248,6 +260,12 @@ namespace SPICA.Formats.CtrGfx.Animation
                 Serializer.Writer.Write(curve.StartFrame);
                 Serializer.Writer.Write(curve.EndFrame);
                 Serializer.Writer.Write(FormatFlags);
+                if (FormatFlags == 1)
+                {
+                    Serializer.Writer.Write(curve.KeyFrames.Count > 0 ? curve.KeyFrames[0].Value : 0.0f);
+                    continue;
+                }
+
                 Serializer.Writer.Write(curve.KeyFrames.Count);
                 Serializer.Writer.Write(InvDuration);
 
