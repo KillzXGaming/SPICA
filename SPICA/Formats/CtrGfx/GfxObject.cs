@@ -19,6 +19,9 @@ namespace SPICA.Formats.CtrGfx
     [TypeChoice(0x20000004, typeof(GfxTextureReference))]
     [TypeChoice(0x20000009, typeof(GfxTextureCube))]
     [TypeChoice(0x20000011, typeof(GfxTextureImage))]
+    [TypeChoice(0x40000011, typeof(GfxTextureImage))]
+    [TypeChoice(0x03000000, typeof(GfxTextureImage))]
+
     [TypeChoice(0x4000000a, typeof(GfxCamera))]
     [TypeChoice(0x40000012, typeof(GfxModel))]
     [TypeChoice(0x40000092, typeof(GfxModelSkeletal))]

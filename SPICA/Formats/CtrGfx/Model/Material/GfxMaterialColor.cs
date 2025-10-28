@@ -33,6 +33,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         public RGBA Constant4;
         public RGBA Constant5;
 
+        [IfVersion(CmpOp.Gequal, 0x05000000)]
         private uint CommandCache;
 
         [Ignore] public float Scale;

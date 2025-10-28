@@ -1,5 +1,6 @@
 ﻿using SPICA.Formats.Common;
 using SPICA.Formats.CtrH3D.Model.Mesh;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model.Mesh
@@ -45,8 +46,8 @@ namespace SPICA.Formats.CtrGfx.Model.Mesh
         private uint DisableCommandsPtr;
         private uint DisableCommandsLength;
 
-        private string _MeshNodeName;
-
+        [IfVersion(CmpOp.Gequal, 0x05000000, true)]
+        private string _MeshNodeName = "";
         public string MeshNodeName
         {
             get => _MeshNodeName;

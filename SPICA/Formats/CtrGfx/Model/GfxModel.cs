@@ -5,6 +5,7 @@ using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.PICA.Commands;
 using SPICA.PICA.Converters;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace SPICA.Formats.CtrGfx.Model
 
         public List<GfxShape> Shapes;
 
+        [IfVersion(CmpOp.Less, 67108864)]
         public GfxDict<GfxMeshNodeVisibility> MeshNodeVisibilities;
 
         public GfxModelFlags Flags;
@@ -81,7 +83,7 @@ namespace SPICA.Formats.CtrGfx.Model
 
                 PICAVertex[] Vertices = null;
 
-                foreach (GfxVertexBuffer VertexBuffer in Shape.VertexBuffers)
+                foreach (GfxVertexBuffer buffer in Shape.VertexBuffers)
                 {
                     /*
                      * CGfx supports 3 types of vertex buffer:
@@ -92,6 +94,23 @@ namespace SPICA.Formats.CtrGfx.Model
                      * - Fixed: The attribute have only a single fixed value, so instead of a stream,
                      * it have a single vector.
                      */
+
+                    var VertexBuffer = buffer;
+
+                    if (VertexBuffer is GfxAttributeV1 attrv1)
+                    {
+                        VertexBuffer = new GfxAttribute()
+                        {
+                            AttrName = attrv1.AttrName,
+                            Elements = attrv1.Elements,
+                            Format = attrv1.Format,
+                            Offset = attrv1.Offset,
+                            RawBuffer = attrv1.RawBuffer,
+                            Scale = attrv1.Scale,
+                            Type = attrv1.Type,
+                        }; 
+                    }
+
                     if (VertexBuffer is GfxAttribute)
                     {
                         //Non-Interleaved buffer
@@ -168,7 +187,7 @@ namespace SPICA.Formats.CtrGfx.Model
                 if (Vertices != null)
                 {
                     //If any vertex buffers use one single buffer, recalculate the total stride based on all attributes setup
-                    if (Shape.VertexBuffers.Any(x => x is GfxAttribute))
+                    if (Shape.VertexBuffers.Any(x => x is GfxAttribute || x is GfxAttributeV1))
                         M.VertexStride = VerticesConverter.CalculateStride(M.Attributes);
 
                     M.RawBuffer = VerticesConverter.GetBuffer(Vertices, M.Attributes);

@@ -48,6 +48,8 @@ namespace SPICA.Formats.CtrGfx.LUT
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
+            if (RawCommands == null) return;
+
             uint[] Commands = new uint[RawCommands.Length >> 2];
 
             for (int i = 0; i < RawCommands.Length; i += 4)
