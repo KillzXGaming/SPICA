@@ -48,18 +48,14 @@ namespace SPICA.Formats.CtrGfx
         public readonly GfxDict<GfxShader>    Shaders;
         public readonly GfxDict<GfxCamera>    Cameras;
         public readonly GfxDict<GfxLight>     Lights;
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public readonly GfxDict<GfxFog>       Fogs;
-
         public readonly GfxDict<GfxScene>     Scenes;
         public readonly GfxDict<GfxAnimation> SkeletalAnimations;
         public readonly GfxDict<GfxAnimation> MaterialAnimations;
         public readonly GfxDict<GfxAnimation> VisibilityAnimations;
         public readonly GfxDict<GfxAnimation> CameraAnimations;
         public readonly GfxDict<GfxAnimation> LightAnimations;
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public readonly GfxDict<GfxAnimation> FogAnimations;
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public readonly GfxDict<GfxEmitter>   Emitters;
 
         public Gfx()
@@ -102,7 +98,6 @@ namespace SPICA.Formats.CtrGfx
             BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions());
 
             GfxHeader Header = Deserializer.Deserialize<GfxHeader>();
-            Deserializer.MainFileVersion = (int)Header.Revision;
             Gfx Scene = Deserializer.Deserialize<Gfx>();
 
             return Scene;

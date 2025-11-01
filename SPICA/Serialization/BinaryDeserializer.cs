@@ -1,5 +1,4 @@
-﻿using SPICA.Formats.CtrGfx;
-using SPICA.Math3D;
+﻿using SPICA.Math3D;
 using SPICA.Serialization.Attributes;
 
 using System;
@@ -232,7 +231,7 @@ namespace SPICA.Serialization
             {
                 FieldsCount++;
 
-                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(FileVersion, MainFileVersion) ?? false) continue;
+                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(FileVersion) ?? false) continue;
 
                 if (!(
                     Info.IsDefined(typeof(IgnoreAttribute)) ||

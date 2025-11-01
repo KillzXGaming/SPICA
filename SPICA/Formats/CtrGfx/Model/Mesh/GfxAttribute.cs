@@ -1,6 +1,5 @@
 ﻿using SPICA.PICA.Commands;
-using SPICA.Serialization;
-using SPICA.Serialization.Attributes;
+
 using System.IO;
 using System.Numerics;
 
@@ -20,7 +19,7 @@ namespace SPICA.Formats.CtrGfx.Model.Mesh
 
         public int Elements;
 
-        public float Scale = 1;
+        public float Scale;
 
         public int Offset;
 

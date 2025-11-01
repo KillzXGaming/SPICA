@@ -1,8 +1,7 @@
 ﻿using SPICA.Formats.Common;
 using SPICA.Formats.CtrGfx.AnimGroup;
 using SPICA.Formats.CtrH3D.Animation;
-using SPICA.Serialization;
-using SPICA.Serialization.Attributes;
+
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -28,7 +27,6 @@ namespace SPICA.Formats.CtrGfx.Animation
 
         public GfxDict<GfxAnimationElement> Elements;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)] 
         public GfxDict<GfxMetaData> MetaData;
 
         private const string MatCoordScaleREx = @"Materials\[""(.+)""\]\.TextureCoordinators\[(\d)\]\.Scale";

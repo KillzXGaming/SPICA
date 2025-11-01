@@ -10,20 +10,13 @@ namespace SPICA.Formats.CtrGfx.Model.Mesh
     [TypeChoice(0x10000001u, typeof(GfxShape))]
     public class GfxShape : GfxObject
     {
-        [IfVersion(CmpOp.Gequal, 0x05000000, true)]
         private uint Flags;
 
         public readonly GfxBoundingBox BoundingBox;
 
-        [IfVersion(CmpOp.Less, 0x05000000, true)]
-        private Vector3 BoundingCenter;
-
         public Vector3 PositionOffset;
 
         public readonly List<GfxSubMesh> SubMeshes;
-
-        [IfVersion(CmpOp.Less, 0x05000000, true)]
-        private Vector2 Pad2;
 
         private uint BaseAddress;
 

@@ -15,7 +15,6 @@ namespace SPICA.Serialization
         protected SerializationOptions Options;
 
         public int FileVersion;
-        public int MainFileVersion;
 
         private const BindingFlags Binding =
             BindingFlags.DeclaredOnly |

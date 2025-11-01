@@ -7,18 +7,15 @@ namespace SPICA.Serialization.Attributes
     {
         public CmpOp Comparer;
         public int   Version;
-        public bool CompareMainBinary = false;
 
-        public IfVersionAttribute(CmpOp Comparer, int Version, bool CompareMainBinary = false)
+        public IfVersionAttribute(CmpOp Comparer, int Version)
         {
             this.Comparer = Comparer;
             this.Version  = Version;
-            this.CompareMainBinary = CompareMainBinary;
         }
 
-        public bool Compare(int SectionVersion, int MainFileVersion = 0)
+        public bool Compare(int Version)
         {
-            var Version = CompareMainBinary ? MainFileVersion : SectionVersion;
             switch (Comparer)
             {
                 case CmpOp.Equal:   return Version == this.Version;

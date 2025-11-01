@@ -24,35 +24,24 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         public GfxTexCoordConfig   TexCoordConfig;
         public int RenderLayer;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxMaterialColor Colors;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxRasterization Rasterization;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxFragOp FragmentOperation;
 
         public int UsedTextureCoordsCount;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         [Inline, FixedLength(3)] public GfxTextureCoord[]  TextureCoords;
-
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         [Inline, FixedLength(3)] public GfxTextureMapper[] TextureMappers;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxProcTextureMapper ProceduralTextureMapper;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxShaderReference Shader;
-
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public GfxFragShader      FragmentShader;
 
         public int ShaderProgramDescIndex;
 
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
         public List<GfxShaderParam> ShaderParameters;
 
         public int LightSetIndex;
@@ -582,9 +571,6 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
             for (int i = 0; i < 6; i++)
             {
-                if (this.FragmentShader.TextureEnvironments[i] == null)
-                    this.FragmentShader.TextureEnvironments[i] = new();
-
                 Mat.MaterialParams.TexEnvStages[i] = this.FragmentShader.TextureEnvironments[i].Stage;
                 Mat.MaterialParams.TexEnvStages[i].Constant = this.FragmentShader.TextureEnvironments[i].Constant;
             }

@@ -6,8 +6,6 @@ namespace SPICA.Formats.CtrGfx.Model.Mesh
 {
     public class GfxVertexBufferInterleaved : GfxVertexBuffer
     {
-
-
         private uint BufferObj;
         private uint LocationFlag;
 

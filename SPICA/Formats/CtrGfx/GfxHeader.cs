@@ -17,7 +17,7 @@ namespace SPICA.Formats.CtrGfx
         public int  SectionsCount;
 
         //TODO: Version 1.0.0.0 is unsupported.
-        [IfVersion(CmpOp.Gequal, 0x05000000)]
+        [IfVersion(CmpOp.Gequal, 0x02000000)]
         public GfxSectionHeader Data;
 
         public GfxHeader()
