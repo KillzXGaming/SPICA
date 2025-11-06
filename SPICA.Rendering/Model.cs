@@ -532,12 +532,34 @@ namespace SPICA.Rendering
             int TwoSidedDiffLocation = GL.GetUniformLocation(Shader.Handle, $"Lights[{fi}].TwoSidedDiff");
             int DirectionalLocation = GL.GetUniformLocation(Shader.Handle, $"Lights[{fi}].Directional");
 
-            GL.Uniform3(PositionLocation, Light.Position);
-            GL.Uniform3(DirectionLocation, Light.Direction);
-            GL.Uniform4(AmbientLocation, Light.Ambient);
-            GL.Uniform4(DiffuseLocation, Light.Diffuse);
-            GL.Uniform4(Specular0Location, Light.Specular0);
-            GL.Uniform4(Specular1Location, Light.Specular1);
+            GL.Uniform3(PositionLocation, 
+                Light.Position.X,
+                Light.Position.Y,
+                Light.Position.Z);
+            GL.Uniform3(DirectionLocation,
+                Light.Direction.X,
+                Light.Direction.Y,
+                Light.Direction.Z);
+            GL.Uniform4(AmbientLocation,
+                Light.Ambient.X,
+                Light.Ambient.Y,
+                Light.Ambient.Z,
+                Light.Ambient.W);
+            GL.Uniform4(DiffuseLocation, 
+                Light.Diffuse.X, 
+                Light.Diffuse.Y, 
+                Light.Diffuse.Z, 
+                Light.Diffuse.W);
+            GL.Uniform4(Specular0Location,
+                Light.Specular0.X,
+                Light.Specular0.Y, 
+                Light.Specular0.Z, 
+                Light.Specular0.W);
+            GL.Uniform4(Specular1Location, 
+                Light.Specular1.X,
+                Light.Specular1.Y,
+                Light.Specular1.Z,
+                Light.Specular1.W);
             GL.Uniform1(LUTInputLocation, Light.AngleLUTInput);
             GL.Uniform1(LUTScaleLocation, Light.AngleLUTScale);
             GL.Uniform1(AttScaleLocation, Light.AttenuationScale);

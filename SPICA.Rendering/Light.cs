@@ -1,11 +1,10 @@
-﻿using OpenTK;
-using OpenTK.Graphics;
-
+﻿
 using SPICA.Formats.CtrH3D.Light;
 using SPICA.PICA.Commands;
 using SPICA.Rendering.SPICA_GL;
 
 using System;
+using System.Numerics;
 
 namespace SPICA.Rendering
 {
@@ -13,14 +12,14 @@ namespace SPICA.Rendering
     {
         public Vector3 Position;
         public Vector3 Direction;
-        public Color4  Ambient;
-        public Color4  Diffuse;
-        public Color4  Specular0;
-        public Color4  Specular1;
+        public Vector4 Ambient;
+        public Vector4 Diffuse;
+        public Vector4 Specular0;
+        public Vector4 Specular1;
 
         public LightType Type;
 
-        public int   AngleLUTInput;
+        public int AngleLUTInput;
         public float AngleLUTScale;
 
         public float AttenuationScale;
@@ -41,31 +40,32 @@ namespace SPICA.Rendering
 
         public Light(H3DLight Light)
         {
-            Matrix4 Transform =
-                Matrix4.CreateScale(Light.TransformScale.ToVector3()) *
-                Matrix4.CreateRotationX(Light.TransformRotation.X) *
-                Matrix4.CreateRotationY(Light.TransformRotation.Y) *
-                Matrix4.CreateRotationZ(Light.TransformRotation.Z) *
-                Matrix4.CreateTranslation(Light.TransformTranslation.ToVector3());
+            OpenTK.Matrix4 Transform =
+               OpenTK.Matrix4.CreateScale(Light.TransformScale.ToVector3()) *
+               OpenTK.Matrix4.CreateRotationX(Light.TransformRotation.X) *
+               OpenTK.Matrix4.CreateRotationY(Light.TransformRotation.Y) *
+               OpenTK.Matrix4.CreateRotationZ(Light.TransformRotation.Z) *
+               OpenTK.Matrix4.CreateTranslation(Light.TransformTranslation.ToVector3());
 
-            Position = Vector4.Transform(Transform, Vector4.UnitW).Xyz;
+            var pos = OpenTK.Vector4.Transform(Transform, OpenTK.Vector4.UnitW).Xyz;
+            Position = new Vector3(pos.X, pos.Y, pos.Z);
 
             Enabled = Light.IsEnabled;
 
-            DistAttEnabled  = (Light.Flags & H3DLightFlags.HasDistanceAttenuation) != 0;
-            TwoSidedDiffuse = (Light.Flags & H3DLightFlags.IsTwoSidedDiffuse)      != 0;
+            DistAttEnabled = (Light.Flags & H3DLightFlags.HasDistanceAttenuation) != 0;
+            TwoSidedDiffuse = (Light.Flags & H3DLightFlags.IsTwoSidedDiffuse) != 0;
 
             AngleLUTInput = (int)Light.LUTInput;
-            AngleLUTScale =      Light.LUTScale.ToSingle();
+            AngleLUTScale = Light.LUTScale.ToSingle();
 
             if (Light.Content is H3DFragmentLight FragmentLight)
             {
-                Direction = FragmentLight.Direction.ToVector3();
+                Direction = FragmentLight.Direction;
 
-                Ambient   = FragmentLight.AmbientColor.ToColor4();
-                Diffuse   = FragmentLight.DiffuseColor.ToColor4();
-                Specular0 = FragmentLight.Specular0Color.ToColor4();
-                Specular1 = FragmentLight.Specular1Color.ToColor4();
+                Ambient = FragmentLight.AmbientColor.ToVector4();
+                Diffuse = FragmentLight.DiffuseColor.ToVector4();
+                Specular0 = FragmentLight.Specular0Color.ToVector4();
+                Specular1 = FragmentLight.Specular1Color.ToVector4();
 
                 float AttDiff =
                     FragmentLight.AttenuationEnd -
@@ -76,10 +76,10 @@ namespace SPICA.Rendering
                 AttenuationScale = 1f / AttDiff;
                 AttenuationBias = -FragmentLight.AttenuationStart / AttDiff;
 
-                AngleLUTTableName   = FragmentLight.AngleLUTTableName;
+                AngleLUTTableName = FragmentLight.AngleLUTTableName;
                 AngleLUTSamplerName = FragmentLight.AngleLUTSamplerName;
 
-                DistanceLUTTableName   = FragmentLight.DistanceLUTTableName;
+                DistanceLUTTableName = FragmentLight.DistanceLUTTableName;
                 DistanceLUTSamplerName = FragmentLight.DistanceLUTSamplerName;
 
                 Directional = Light.Type == H3DLightType.FragmentDir;

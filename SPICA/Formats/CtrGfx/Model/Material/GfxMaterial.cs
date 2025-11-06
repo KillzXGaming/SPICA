@@ -894,6 +894,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             this.FragmentOperation.Blend.Function.AlphaEquation = PICABlendEquation.FuncAdd;
             this.FragmentOperation.Blend.Function.ColorEquation = PICABlendEquation.FuncAdd;
         }
+
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer) {
 
             //M-1: I guess they swapped places in v2?
