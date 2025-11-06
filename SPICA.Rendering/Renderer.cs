@@ -34,8 +34,8 @@ namespace SPICA.Rendering
         public readonly List<Model> Models;
         public readonly List<Light> Lights;
 
-        public readonly Dictionary<string, Texture>      Textures;
-        public readonly Dictionary<string, LUT>          LUTs;
+        public readonly Dictionary<string, Texture> Textures;
+        public readonly Dictionary<string, LUT> LUTs;
         public readonly Dictionary<string, VertexShader> Shaders;
 
         public Color4 SceneAmbient;
@@ -59,8 +59,8 @@ namespace SPICA.Rendering
             Lights = new List<Light>();
 
             Textures = new Dictionary<string, Texture>();
-            LUTs     = new Dictionary<string, LUT>();
-            Shaders  = new Dictionary<string, VertexShader>();
+            LUTs = new Dictionary<string, LUT>();
+            Shaders = new Dictionary<string, VertexShader>();
 
             if (System.IO.File.Exists("Default.png"))
                 DefaultTexture = new Texture(new H3DTexture("Default.png"));
@@ -68,13 +68,12 @@ namespace SPICA.Rendering
             UVTestTexture = new Texture(new H3DTexture("UVPattern", Resources.UVPattern));
             WeightRampTexture1 = new Texture(new H3DTexture("WeightRampTexture1", Resources.boneWeightGradient));
             WeightRampTexture2 = new Texture(new H3DTexture("WeightRampTexture2", Resources.boneWeightGradient2));
-            
+
             var lut = new H3DLUT() { Name = "Default" };
-            lut.Samplers.Add(new H3DLUTSampler()
-            {
-                Name = "Default",
-            });
+            lut.Samplers.Add(new H3DLUTSampler() { Name = "Default" });
+            lut.Samplers.Add(new H3DLUTSampler() { Name = "DefaultBlack" });
             lut.Samplers[0].CreateLerp(0, 0.0f, 128, 1.0f);
+            lut.Samplers[1].CreateLerp(0, 0.0f, 128, 0.0f);
 
             DefaultLUT = new LUT(lut);
 
@@ -111,7 +110,7 @@ namespace SPICA.Rendering
 
         public void Resize(int Width, int Height)
         {
-            this.Width  = Width;
+            this.Width = Width;
             this.Height = Height;
 
             GL.Viewport(0, 0, Width, Height);
@@ -338,7 +337,7 @@ namespace SPICA.Rendering
             if (TableName != null && LUTs.TryGetValue(TableName, out LUT LUT))
             {
                 if (!LUT.BindSampler(Unit, SamplerName))
-                    return DefaultLUT.BindSampler(Unit, "Default"); 
+                    return DefaultLUT.BindSampler(Unit, "Default");
                 else
                     return true;
             }
@@ -348,7 +347,7 @@ namespace SPICA.Rendering
             }
             else
             {
-               return DefaultLUT.BindSampler(Unit, "Default");
+                return DefaultLUT.BindSampler(Unit, "DefaultBlack");
             }
 
             return false;

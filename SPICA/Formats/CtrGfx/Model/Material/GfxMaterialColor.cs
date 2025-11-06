@@ -1,4 +1,5 @@
-﻿using SPICA.Math3D;
+﻿using SPICA.Formats.Common;
+using SPICA.Math3D;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
@@ -21,18 +22,22 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         private Vector4 Constant4F;
         private Vector4 Constant5F;
 
-        public RGBA Emission;
-        public RGBA Ambient;
-        public RGBA Diffuse;
-        public RGBA Specular0;
-        public RGBA Specular1;
-        public RGBA Constant0;
-        public RGBA Constant1;
-        public RGBA Constant2;
-        public RGBA Constant3;
-        public RGBA Constant4;
-        public RGBA Constant5;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Emission;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Ambient;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Diffuse;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Specular0;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Specular1;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant0;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant1;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant2;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant3;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant4;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public RGBA Constant5;
 
+        [IfVersion(CmpOp.Equal, 0x04000000)]
+        private uint HashMaybe;
+
+        [IfVersion(CmpOp.Greater, 0x03000000)]
         private uint CommandCache;
 
         [Ignore] public float Scale;
@@ -40,6 +45,21 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
             Scale = AmbientF.W;
+
+            if(Deserializer.CurrentRevision <= 0x03000000)
+            {
+                Emission = RGBA.FromFloat(EmissionF);
+                Ambient = RGBA.FromFloat(AmbientF);
+                Diffuse = RGBA.FromFloat(DiffuseF);
+                Specular0 = RGBA.FromFloat(Specular0F);
+                Specular1 = RGBA.FromFloat(Specular1F);
+                Constant0 = RGBA.FromFloat(Constant0F);
+                Constant1 = RGBA.FromFloat(Constant1F);
+                Constant2 = RGBA.FromFloat(Constant2F);
+                Constant3 = RGBA.FromFloat(Constant3F);
+                Constant4 = RGBA.FromFloat(Constant4F);
+                Constant5 = RGBA.FromFloat(Constant5F);
+            }
         }
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)

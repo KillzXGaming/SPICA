@@ -14,7 +14,10 @@ namespace SPICA.Serialization
 
         protected SerializationOptions Options;
 
-        public int FileVersion;
+        public Stack<uint> RevisionStack = new Stack<uint>();
+        public bool IsNintendogsV3 = false;
+        public uint CurrentRevision => RevisionStack.Count > 0 ? RevisionStack.Peek() : MainFileVersion;
+        public uint MainFileVersion;
 
         private const BindingFlags Binding =
             BindingFlags.DeclaredOnly |

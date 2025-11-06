@@ -1,8 +1,9 @@
-﻿using SPICA.Formats.Common;
-using SPICA.Math3D;
-
-using System.Numerics;
+﻿using System.Numerics;
 using Newtonsoft.Json;
+using SPICA.Formats.Common;
+using SPICA.Math3D;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model
 {
@@ -40,7 +41,16 @@ namespace SPICA.Formats.CtrGfx.Model
 
         public GfxBillboardMode BillboardMode;
 
+        [IfVersion(CmpOp.Greater, 0x04000000, true)]
         public GfxDict<GfxMetaData> MetaData;
+
+        [IfVersion(CmpOp.Equal, 0x04000000, true)]
+        public uint UnkA;
+
+        public GfxBone()
+        {
+            MetaData = new GfxDict<GfxMetaData>();
+        }
 
         public void UpdateMatrices()
         {

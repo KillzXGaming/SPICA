@@ -1,13 +1,14 @@
-﻿using SPICA.Formats.Common;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using SPICA.Formats.Common;
 using SPICA.Formats.CtrGfx.AnimGroup;
 using SPICA.Formats.CtrH3D.Animation;
-
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Animation
 {
-    public class GfxAnimation : INamed
+    public class GfxAnimation : INamed, ICustomSerialization
     {
         private GfxRevHeader Header;
 
@@ -27,6 +28,7 @@ namespace SPICA.Formats.CtrGfx.Animation
 
         public GfxDict<GfxAnimationElement> Elements;
 
+        [IfVersion(CmpOp.Greater, 0x04000000)]
         public GfxDict<GfxMetaData> MetaData;
 
         private const string MatCoordScaleREx = @"Materials\[""(.+)""\]\.TextureCoordinators\[(\d)\]\.Scale";
@@ -59,7 +61,7 @@ namespace SPICA.Formats.CtrGfx.Animation
             Elements = new GfxDict<GfxAnimationElement>();
             MetaData = new GfxDict<GfxMetaData>();
             this.Header.MagicNumber = 0x4D4E4143;
-            this.Header.Revision = 117440512;
+            this.Header.Revision = 0x07000001;
             this.LoopMode = GfxLoopMode.Loop;
         }
 
@@ -791,6 +793,15 @@ namespace SPICA.Formats.CtrGfx.Animation
             {
                 Target.Add(Item);
             }
+        }
+
+        public void Deserialize(BinaryDeserializer Deserializer) { }
+
+        bool ICustomSerialization.Serialize(BinarySerializer Serializer)
+        {
+            Header.Revision = 0x07000001;
+
+            return false;
         }
     }
 }

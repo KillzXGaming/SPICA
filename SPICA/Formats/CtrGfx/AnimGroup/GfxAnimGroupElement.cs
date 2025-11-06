@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SPICA.Formats.Common;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.AnimGroup
@@ -14,6 +15,16 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
     [TypeChoice(0x20000000u, typeof(GfxAnimGroupTexMapper))]
     [TypeChoice(0x40000000u, typeof(GfxAnimGroupBone))]
     [TypeChoice(0x80000000u, typeof(GfxAnimGroupTexCoord))]
+
+    //[TypeChoice(0x00000010u, typeof(GfxAnimGroupMeshNodeVis))]
+    [TypeChoice(0x00000008u, typeof(GfxAnimGroupMesh))]
+    [TypeChoice(0x00000040u, typeof(GfxAnimGroupTexSampler))]
+    [TypeChoice(0x00000001u, typeof(GfxAnimGroupBlendOp))]
+    [TypeChoice(0x00000004u, typeof(GfxAnimGroupMaterialColor))]
+    [TypeChoice(0x10000000u, typeof(GfxAnimGroupModel))]
+    [TypeChoice(0x00000080u, typeof(GfxAnimGroupTexMapper))]
+    [TypeChoice(0x00000002u, typeof(GfxAnimGroupBone))]
+    [TypeChoice(0x00000020u, typeof(GfxAnimGroupTexCoord))]
 
     [TypeChoice(0x00100000u, typeof(GfxAnimGroup001000))] 
     [TypeChoice(0x00200000u, typeof(GfxAnimGroup002000))] //Camera near/far/fov/aspect
@@ -30,6 +41,12 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
             set => _Name = value ?? throw Exceptions.GetNullException("Name");
         }
 
+        [JsonIgnore]
+        [IfVersion(CmpOp.Less, 0x05000000, true)] public string NameUnk0;
+
+        [JsonIgnore]
+        [IfVersion(CmpOp.Less, 0x05000000, true)] public uint NameUnk1;
+
         public int MemberOffset;
 
         public int BlendOpIndex;
@@ -40,6 +57,9 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
         public uint MemberType;
 
         private uint MaterialPtr;
+
+        [JsonIgnore]
+        [IfVersion(CmpOp.Less, 0x05000000, true)] private uint Unk;
     }
 
     public class GfxAnimGroup001000 : GfxAnimGroupElement

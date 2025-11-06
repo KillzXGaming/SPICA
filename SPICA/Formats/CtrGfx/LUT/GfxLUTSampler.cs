@@ -6,6 +6,7 @@ using SPICA.Serialization.Attributes;
 namespace SPICA.Formats.CtrGfx.LUT
 {
     [TypeChoice(0x80000000u, typeof(GfxLUTSampler))]
+    [TypeChoice(0x00000001u, typeof(GfxLUTSampler), GfxObjTypesV5.LUTSampler)]
     public class GfxLUTSampler : ICustomSerialization, INamed
     {
         private string _Name;
@@ -15,6 +16,11 @@ namespace SPICA.Formats.CtrGfx.LUT
             get => _Name;
             set => _Name = value ?? throw Exceptions.GetNullException("Name");
         }
+
+        [IfVersion(CmpOp.Lequal, 0x03FFFFFF, true)] internal string SomeIndex;
+        [IfVersion(CmpOp.Lequal, 0x03FFFFFF, true)] internal string Unk0;
+        [IfVersion(CmpOp.Lequal, 0x03FFFFFF, true)] internal string Unk1;
+        [IfVersion(CmpOp.Lequal, 0x03FFFFFF, true)] internal float[] TableTest;
 
         public bool IsAbsolute;
 

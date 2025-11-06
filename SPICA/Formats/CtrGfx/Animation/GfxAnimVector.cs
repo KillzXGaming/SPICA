@@ -52,7 +52,7 @@ namespace SPICA.Formats.CtrGfx.Animation
         {
             SeekToFlags(
                 Deserializer.BaseStream,
-                Deserializer.FileVersion,
+                (int)Deserializer.CurrentRevision,
                 Position);
 
             uint Flags = Deserializer.Reader.ReadUInt32();
@@ -110,7 +110,7 @@ namespace SPICA.Formats.CtrGfx.Animation
         {
             SeekToFlags(
                 Serializer.BaseStream,
-                Serializer.FileVersion,
+                (int)Serializer.CurrentRevision,
                 Position);
 
             Serializer.Writer.Write(Flags);

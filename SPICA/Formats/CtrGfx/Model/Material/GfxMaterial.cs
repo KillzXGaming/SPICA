@@ -9,20 +9,26 @@ using SPICA.PICA.Commands;
 using Newtonsoft.Json;
 using SPICA.Formats.CtrH3D.Model.Material;
 using System;
+using SPICA.Formats.Common;
 
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
     [TypeChoice(0x08000000u, typeof(GfxMaterial))]
+    [TypeChoice(0x00000010u, typeof(GfxMaterial))]
     public class GfxMaterial : GfxObject, ICustomSerialization
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Material;
+
         [Ignore]
         [JsonIgnore]
         public H3DMaterial H3DMaterial;
 
+        //M-1: I guess Flags and TexCoordConfig swapped places in v2
         public GfxMaterialFlags Flags;
 
-        public GfxTexCoordConfig   TexCoordConfig;
-        public int RenderLayer;
+        public GfxTexCoordConfig TexCoordConfig;
+
+        [IfVersion(CmpOp.Greater, 0x02000000)] public int RenderLayer;
 
         public GfxMaterialColor Colors;
 
@@ -30,7 +36,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         public GfxFragOp FragmentOperation;
 
-        public int UsedTextureCoordsCount;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public int UsedTextureCoordsCount;
 
         [Inline, FixedLength(3)] public GfxTextureCoord[]  TextureCoords;
         [Inline, FixedLength(3)] public GfxTextureMapper[] TextureMappers;
@@ -38,29 +44,32 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         public GfxProcTextureMapper ProceduralTextureMapper;
 
         public GfxShaderReference Shader;
+
+        [IfVersion(CmpOp.Lequal, 0x03000000)] internal GfxUnkStruct UnkStruct;
+
         public GfxFragShader      FragmentShader;
 
-        public int ShaderProgramDescIndex;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public int ShaderProgramDescIndex;
+        [IfVersion(CmpOp.Greater, 0x03000000)] public List<GfxShaderParam> ShaderParameters;
 
-        public List<GfxShaderParam> ShaderParameters;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public int LightSetIndex;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public int FogIndex;
 
-        public int LightSetIndex;
-        public int FogIndex;
-
-        private uint MaterialFlagsHash;
-        private uint ShaderParamsHash;
-        private uint TextureCoordsHash;
-        private uint TextureSamplersHash;
-        private uint TextureMappersHash;
-        private uint MaterialColorsHash;
-        private uint RasterizationHash;
-        private uint FragLightHash;
-        private uint FragLightLUTHash;
-        private uint FragLightLUTSampHash;
-        private uint TextureEnvironmentHash;
-        private uint AlphaTestHash;
-        private uint FragOpHash;
-        private uint UniqueId;
+        //M-1: It appears "MaterialFlagsHash" is just a clone of MaterialsFlags in versions < 4.0.0.0
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint MaterialFlagsHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint ShaderParamsHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint TextureCoordsHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint TextureSamplersHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint TextureMappersHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint MaterialColorsHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint RasterizationHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint FragLightHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint FragLightLUTHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint FragLightLUTSampHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint TextureEnvironmentHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint AlphaTestHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint FragOpHash;
+        [IfVersion(CmpOp.Greater, 0x03000000)] private uint UniqueId;
 
         [JsonIgnore]
         public RenderPreset RenderingPreset
@@ -97,11 +106,13 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             TextureMappers = new GfxTextureMapper[3];
 
             Shader         = new GfxShaderReference();
+            UnkStruct      = new GfxUnkStruct();
             FragmentShader = new GfxFragShader();
 
             ShaderParameters = new List<GfxShaderParam>();
 
             Header.MagicNumber = 0x424F544D;
+            Header.Revision = 0x06000001;
         }
 
         public void ConvertH3D(H3DMaterial material)
@@ -112,7 +123,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             foreach (var usd in material.BcresUserData)
                 this.MetaData.Add(usd);
             this.Flags = (GfxMaterialFlags)material.MaterialParams.Flags;
-            this.FragmentShader.Lighting.TranslucencyKind = (GfxTranslucencyKind)material.MaterialParams.TranslucencyKind;
+            this.FragmentShader.Lighting.LayerConfig = (GfxLayerConfig)material.MaterialParams.TranslucencyKind;
             this.TexCoordConfig = (GfxTexCoordConfig)material.MaterialParams.TexCoordConfig;
             this.LightSetIndex = material.MaterialParams.LightSetIndex;
             this.FogIndex = material.MaterialParams.FogIndex;
@@ -382,10 +393,10 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
             Mat.MaterialParams.Flags = (H3DMaterialFlags)this.Flags;
 
-            Mat.MaterialParams.RenderLayer = this.RenderLayer;
+            Mat.MaterialParams.RenderLayer = (int)this.RenderLayer;
             Mat.MaterialParams.TexCoordConfig = (H3DTexCoordConfig)this.TexCoordConfig;
 
-            Mat.MaterialParams.TranslucencyKind = (H3DTranslucencyKind)this.FragmentShader.Lighting.TranslucencyKind;
+            Mat.MaterialParams.TranslucencyKind = (H3DTranslucencyKind)this.FragmentShader.Lighting.LayerConfig;
             Mat.MaterialParams.FresnelSelector = (H3DFresnelSelector)this.FragmentShader.Lighting.FresnelSelector;
 
             Mat.MaterialParams.EmissionColor = this.Colors.Emission;
@@ -416,7 +427,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             Mat.MaterialParams.DepthColorMask.GreenWrite = true;
             Mat.MaterialParams.DepthColorMask.BlueWrite = true;
             Mat.MaterialParams.DepthColorMask.AlphaWrite = true;
-            Mat.MaterialParams.DepthColorMask.DepthWrite = true;
+            Mat.MaterialParams.DepthColorMask.DepthWrite = FragmentOperation.Depth.ColorMask.DepthWrite;
 
             Mat.MaterialParams.ColorBufferRead = false;
             Mat.MaterialParams.ColorBufferWrite = true;
@@ -480,23 +491,38 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
                 H3DTextureMapper TM = new H3DTextureMapper();
 
-                TM.WrapU = TexMapper.WrapU;
-                TM.WrapV = TexMapper.WrapV;
-
-                TM.MagFilter = (H3DTextureMagFilter)TexMapper.MinFilter;
-
-                switch ((uint)TexMapper.MagFilter | ((uint)TexMapper.MipFilter << 1))
+                if(TexMapper.Sampler is GfxTextureSamplerOld)
                 {
-                    case 0: TM.MinFilter = H3DTextureMinFilter.NearestMipmapNearest; break;
-                    case 1: TM.MinFilter = H3DTextureMinFilter.LinearMipmapNearest; break;
-                    case 2: TM.MinFilter = H3DTextureMinFilter.NearestMipmapLinear; break;
-                    case 3: TM.MinFilter = H3DTextureMinFilter.LinearMipmapLinear; break;
+                    var sampler = (GfxTextureSamplerOld)TexMapper.Sampler;
+
+                    TM.WrapU = sampler.WrapS.ToPICA();
+                    TM.WrapV = sampler.WrapT.ToPICA();
+                    TM.MinFilter = sampler.MinFilter.ToH3D();
+                    TM.MagFilter = sampler.MagFilter.ToH3D();
+                    TM.MinLOD = (byte)(sampler.MinLod / 255);
+                    TM.LODBias = sampler.LodBias;
+                    TM.BorderColor = sampler.BorderColor;
                 }
+                else
+                {
+                    TM.WrapU = TexMapper.WrapU;
+                    TM.WrapV = TexMapper.WrapV;
 
-                TM.LODBias = TexMapper.LODBias;
-                TM.MinLOD = TexMapper.MinLOD;
+                    TM.MagFilter = (H3DTextureMagFilter)TexMapper.MinFilter;
 
-                TM.BorderColor = TexMapper.BorderColor;
+                    switch ((uint)TexMapper.MagFilter | ((uint)TexMapper.MipFilter << 1))
+                    {
+                        case 0: TM.MinFilter = H3DTextureMinFilter.NearestMipmapNearest; break;
+                        case 1: TM.MinFilter = H3DTextureMinFilter.LinearMipmapNearest; break;
+                        case 2: TM.MinFilter = H3DTextureMinFilter.NearestMipmapLinear; break;
+                        case 3: TM.MinFilter = H3DTextureMinFilter.LinearMipmapLinear; break;
+                    }
+
+                    TM.LODBias = TexMapper.LODBias;
+                    TM.MinLOD = TexMapper.MinLOD;
+
+                    TM.BorderColor = TexMapper.BorderColor;
+                }
 
                 Mat.TextureMappers[TMIndex++] = TM;
             }
@@ -698,7 +724,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             {
                 Flags = (GfxFragmentFlags)0,
                 BumpTexture = 0,
-                TranslucencyKind = GfxTranslucencyKind.Layer0,
+                LayerConfig = GfxLayerConfig.LayerConfig0,
                 FresnelSelector = GfxFresnelSelector.No,
                 IsBumpRenormalize = false,
                 BumpMode = 0,
@@ -868,7 +894,18 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             this.FragmentOperation.Blend.Function.AlphaEquation = PICABlendEquation.FuncAdd;
             this.FragmentOperation.Blend.Function.ColorEquation = PICABlendEquation.FuncAdd;
         }
-        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer) { }
+
+        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer) {
+
+            //M-1: I guess they swapped places in v2?
+            //Because the material uses fragment lighting without the flag being set
+            if(Deserializer.MainFileVersion <= 0x02000000)
+            {
+                var temp = Flags;
+                Flags = (GfxMaterialFlags)TexCoordConfig;
+                TexCoordConfig = (GfxTexCoordConfig)temp;
+            }
+        }
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {

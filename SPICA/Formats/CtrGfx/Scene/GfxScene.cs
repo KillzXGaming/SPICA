@@ -9,6 +9,8 @@ namespace SPICA.Formats.CtrGfx.Scene
     [TypeChoice(0x00800000, typeof(GfxScene))]
     public class GfxScene : GfxObject
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Scene;
+
         public List<GfxSceneContent> Cameras;
         public List<LightSet> LightSets;
         public List<GfxSceneContent> Fogs;

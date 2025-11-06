@@ -1,18 +1,22 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model
 {
     [TypeChoice(0x02000000u, typeof(GfxSkeleton))]
+    [TypeChoice(0x00000040u, typeof(GfxSkeleton))]
     public class GfxSkeleton : GfxObject, INamed
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Skeleton;
+
         public readonly GfxDict<GfxBone> Bones;
 
         public GfxBone RootBone;
 
         public GfxSkeletonScalingRule ScalingRule;
 
-        private int Flags;
+        [IfVersion(CmpOp.Greater, 0x02000000, true)] private int Flags;
 
         public bool IsTranslationAnimEnabled
         {

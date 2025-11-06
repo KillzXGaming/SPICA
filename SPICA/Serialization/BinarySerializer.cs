@@ -1,6 +1,7 @@
 ﻿using SPICA.Formats.Common;
 using SPICA.Formats.CtrGfx;
 using SPICA.Formats.CtrGfx.Model;
+using SPICA.Formats.CtrGfx.Model.Mesh;
 using SPICA.Formats.GFL2.Model;
 using SPICA.Math3D;
 using SPICA.Serialization.Attributes;
@@ -245,6 +246,18 @@ namespace SPICA.Serialization
 
             //Avoid writing the same Object more than once
             if (Type.IsClass) AddObjInfo(Value, Position);
+
+
+            // M-1: HACK! Make sure vertex data is aligned
+            // Should we do the same with face indices?
+            if (Value is byte[] bytes)
+            {
+                if (CurrentValue?.Parent is GfxAttribute || 
+                    CurrentValue?.Parent is GfxVertexBufferInterleaved)
+                {
+                    AlignBytes(Writer, 4);
+                }
+            }
         }
 
         private void AddObjInfo(object Value, long Position)
@@ -454,6 +467,11 @@ namespace SPICA.Serialization
 
         private void WriteObject(object Value)
         {
+            //M-1: Hack to update Revision to the latest version of bcres, since that's what we support saving for
+            if (Value is GfxObject gfx)
+            {
+                gfx.Header.Revision = (uint)gfx.Revision;
+            }
             Type ValueType = Value.GetType();
 
             if (ValueType.IsDefined(typeof(TypeChoiceAttribute)))
@@ -462,7 +480,8 @@ namespace SPICA.Serialization
                 {
                     if (Attr.Type == ValueType)
                     {
-                        Writer.Write(Attr.TypeVal);
+                        //M-1: Hack for converting older versions to new versions
+                        Writer.Write(Attr.WriteNewestType ? Attr.NewTypeVal : Attr.TypeVal);
 
                         break;
                     }
@@ -474,9 +493,11 @@ namespace SPICA.Serialization
                 if (((ICustomSerialization)Value).Serialize(this)) return;
             }
 
+            Console.WriteLine($"{Value}");
+
             foreach (FieldInfo Info in GetFieldsSorted(ValueType))
             {
-                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(FileVersion) ?? false) continue;
+                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(CurrentRevision, MainFileVersion) ?? false) continue;
 
                 if (!(
                     Info.IsDefined(typeof(IgnoreAttribute)) ||
@@ -495,13 +516,14 @@ namespace SPICA.Serialization
                     {
                         if (Type.IsPrimitive && Info.IsDefined(typeof(VersionAttribute)))
                         {
+
                             if (Options.ForceWriteStaticVersion)
                             {
-                                FieldValue = Convert.ChangeType(FileVersion, Type);
+                                FieldValue = Convert.ChangeType(MainFileVersion, Type);
                             }
                             else
                             {
-                                FileVersion = Convert.ToInt32(FieldValue);
+                                RevisionStack.Push(Convert.ToUInt32(FieldValue));
                             }
                         }
 
@@ -536,6 +558,11 @@ namespace SPICA.Serialization
 
                     Align(Info.GetCustomAttribute<PaddingAttribute>()?.Size ?? 1);
                 }
+            }
+
+            if (typeof(GfxObject).IsAssignableFrom(ValueType))
+            {
+                RevisionStack.Pop();
             }
         }
 

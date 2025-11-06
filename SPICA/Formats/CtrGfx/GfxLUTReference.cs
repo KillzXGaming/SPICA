@@ -5,6 +5,7 @@ using SPICA.Serialization.Attributes;
 namespace SPICA.Formats.CtrGfx
 {
     [TypeChoice(0x40000000u, typeof(GfxLUTReference))]
+    [TypeChoice(0x00000002u, typeof(GfxLUTReference))]
     public class GfxLUTReference
     {
         private string _TableName;

@@ -12,7 +12,7 @@ namespace SPICA.Formats.CtrGfx
     [Inline]
     public class GfxDict<T> : ICustomSerialization, IPatriciaDict<T> where T : INamed
     {
-        private int _Count;
+        [IfVersion(CmpOp.Greater, 0x03000000, true)] private int _Count;
 
         private GfxDictionary<T> Contents;
 
@@ -39,7 +39,8 @@ namespace SPICA.Formats.CtrGfx
             Contents = new GfxDictionary<T>();
         }
 
-        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer) { }
+        void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer) {
+        }
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {

@@ -1,14 +1,18 @@
-﻿using SPICA.Formats.Common;
+﻿using System.Collections.Generic;
+using SPICA.Formats.Common;
 using SPICA.Formats.CtrGfx.AnimGroup;
-
-using System.Collections.Generic;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx
 {
     public class GfxNode : GfxObject
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Model;
+
         private int BranchVisible;
 
+        [IfVersion(CmpOp.Greater, 0x02000000, true)]
         private bool _IsBranchVisible;
 
         public bool IsBranchVisible
@@ -24,7 +28,8 @@ namespace SPICA.Formats.CtrGfx
 
         public List<GfxObject> Childs;
 
-        public GfxDict<GfxAnimGroup> AnimationsGroup;
+        [IfVersion(CmpOp.Greater, 0x02000000, true)] public GfxDict<GfxAnimGroup> AnimationsGroup;
+        [IfVersion(CmpOp.Lequal, 0x02000000, true)] internal uint SkipOffs;
 
         public GfxNode()
         {

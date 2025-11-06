@@ -138,7 +138,7 @@ namespace SPICA.Formats.CtrH3D
 
             uint PointerAddress = (uint)(Pointer - Commands.Position) >> 2;
 
-            Target -= GetLegacyRelocDiff(Target, Serializer.FileVersion);
+            Target -= GetLegacyRelocDiff(Target, (int)Serializer.CurrentRevision);
 
             uint Flags;
 

@@ -1,19 +1,25 @@
-﻿using SPICA.Formats.CtrGfx.Model.Material;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Runtime.Intrinsics;
+using SPICA.Formats.CtrGfx.Model.Material;
 using SPICA.Formats.CtrGfx.Model.Mesh;
 using SPICA.Formats.CtrH3D;
 using SPICA.Formats.CtrH3D.Model;
 using SPICA.Formats.CtrH3D.Model.Mesh;
 using SPICA.PICA.Commands;
 using SPICA.PICA.Converters;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace SPICA.Formats.CtrGfx.Model
 {
     [TypeChoice(0x40000012u, typeof(GfxModel))]
     [TypeChoice(0x40000092u, typeof(GfxModelSkeletal))]
+    [TypeChoice(0x40000092u, typeof(GfxModelSkeletal))]
+    [TypeChoice(0x00041202u, typeof(GfxModelSkeletal))]
+    [TypeChoice(0x00020902u, typeof(GfxModelSkeletal))]
+    [TypeChoice(0x00000884u, typeof(GfxModelSkeletal))]
     public class GfxModel : GfxNodeTransform
     {
         [Ignore]
@@ -26,12 +32,23 @@ namespace SPICA.Formats.CtrGfx.Model
 
         public List<GfxShape> Shapes;
 
+        [IfVersion(CmpOp.Greater, 0x04000000)]
         public GfxDict<GfxMeshNodeVisibility> MeshNodeVisibilities;
 
+        //Debug
+        [IfVersion(CmpOp.Lequal, 0x04000000)]
+        public uint FlagsForVis;
+        [IfVersion(CmpOp.Lequal, 0x04000000)]
+        public uint CullAndLayerID;
+        //
+
+        [IfVersion(CmpOp.Greater, 0x04000000)]
         public GfxModelFlags Flags;
 
+        [IfVersion(CmpOp.Greater, 0x04000000)]
         public PICAFaceCulling FaceCulling;
 
+        [IfVersion(CmpOp.Greater, 0x04000000)]
         public int LayerId;
 
         public GfxModel()
@@ -55,6 +72,7 @@ namespace SPICA.Formats.CtrGfx.Model
             this.WorldTransform = Math3D.Matrix3x4.Identity;
             this.TransformScale = Vector3.One;
             this.IsBranchVisible = true;
+            this.Name = "Model";
         }
 
         public H3DModel ToH3D()
@@ -81,8 +99,10 @@ namespace SPICA.Formats.CtrGfx.Model
 
                 PICAVertex[] Vertices = null;
 
-                foreach (GfxVertexBuffer VertexBuffer in Shape.VertexBuffers)
+                for (int v = 0; v < Shape.VertexBuffers.Count; v++)
                 {
+                    GfxVertexBuffer VertexBuffer = Shape.VertexBuffers[v];
+
                     /*
                      * CGfx supports 3 types of vertex buffer:
                      * - Non-Interleaved: Each attribute is stored on it's on stream, like this:
@@ -92,8 +112,26 @@ namespace SPICA.Formats.CtrGfx.Model
                      * - Fixed: The attribute have only a single fixed value, so instead of a stream,
                      * it have a single vector.
                      */
-                    if (VertexBuffer is GfxAttribute)
+                    if (VertexBuffer is GfxAttribute || VertexBuffer is GfxAttributeOld)
                     {
+
+                        //M-1: Convert to v5 so structure is the same
+                        if (VertexBuffer is GfxAttributeOld)
+                        {
+                            var NewVtxAtb = new GfxAttribute();
+                            var OldVtxAtb = (GfxAttributeOld)VertexBuffer;
+
+                            NewVtxAtb.Format    = OldVtxAtb.Format;
+                            NewVtxAtb.Type      = OldVtxAtb.Type;
+                            NewVtxAtb.AttrName  = OldVtxAtb.AttrName;
+                            NewVtxAtb.Elements  = OldVtxAtb.Elements;
+                            NewVtxAtb.Scale     = OldVtxAtb.Scale;
+                            NewVtxAtb.RawBuffer = OldVtxAtb.RawBuffer;
+
+                            Shape.VertexBuffers[v] = NewVtxAtb;
+                            VertexBuffer = NewVtxAtb;
+                        }
+
                         //Non-Interleaved buffer
                         GfxAttribute Attr = (GfxAttribute)VertexBuffer;
 
@@ -172,6 +210,41 @@ namespace SPICA.Formats.CtrGfx.Model
                         M.VertexStride = VerticesConverter.CalculateStride(M.Attributes);
 
                     M.RawBuffer = VerticesConverter.GetBuffer(Vertices, M.Attributes);
+
+                    //M-1: Calculate bounding box for old versions just in case it's needed in some games
+                    if (Shape.BoundingBox.Size == Vector3.Zero)
+                    {
+                        //Calculate AABB
+                        float minX = float.MaxValue;
+                        float minY = float.MaxValue;
+                        float minZ = float.MaxValue;
+                        float maxX = float.MinValue;
+                        float maxY = float.MinValue;
+                        float maxZ = float.MinValue;
+
+                        for (int i = 0; i < Vertices.Length; i++)
+                        {
+                            minX = Math.Min(minX, Vertices[i].Position.X);
+                            minY = Math.Min(minY, Vertices[i].Position.Y);
+                            minZ = Math.Min(minZ, Vertices[i].Position.Z);
+                            maxX = Math.Max(maxX, Vertices[i].Position.X);
+                            maxY = Math.Max(maxY, Vertices[i].Position.Y);
+                            maxZ = Math.Max(maxZ, Vertices[i].Position.Z);
+                        }
+
+                        Vector3 max = new Vector3(maxX, maxY, maxZ);
+                        Vector3 min = new Vector3(minX, minY, minZ);
+
+                        //Extend + center
+                        float xxMax = GetExtent(max.X, min.X);
+                        float yyMax = GetExtent(max.Y, min.Y);
+                        float zzMax = GetExtent(max.Z, min.Z);
+                        Vector3 extend = new Vector3(xxMax, yyMax, zzMax);
+
+                        Shape.BoundingBox.Center = min + ((max - min) / 2);
+                        Shape.BoundingBox.Size = extend;
+                        Shape.BoundingBox.Orientation = new Math3D.Matrix3x3(Matrix4x4.CreateTranslation(Shape.BoundingBox.Center));
+                    }
                 }
 
                 Vector4 PositionOffset = new Vector4(Shape.PositionOffset, 0);
@@ -288,6 +361,11 @@ namespace SPICA.Formats.CtrGfx.Model
                 Mdl.BoneScaling = (H3DBoneScaling)((GfxModelSkeletal)Model).Skeleton.ScalingRule;
             }
             return Mdl;
+        }
+
+        private static float GetExtent(float max, float min)
+        {
+            return (float)Math.Max(Math.Sqrt(max * max), Math.Sqrt(min * min));
         }
     }
 }

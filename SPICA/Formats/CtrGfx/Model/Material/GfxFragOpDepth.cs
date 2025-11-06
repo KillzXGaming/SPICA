@@ -1,4 +1,6 @@
-﻿using SPICA.PICA;
+﻿using SPICA.Formats.Common;
+using SPICA.Formats.Generic.StudioMdl;
+using SPICA.PICA;
 using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
@@ -9,21 +11,41 @@ namespace SPICA.Formats.CtrGfx.Model.Material
     {
         public GfxFragOpDepthFlags Flags;
 
-        [Inline, FixedLength(4)] private uint[] Commands;
+        [Inline, FixedLength(4), IfVersion(CmpOp.Greater, 0x03000000)] private uint[] Commands;
 
         [Ignore] public PICADepthColorMask ColorMask;
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
-            PICACommandReader Reader = new PICACommandReader(Commands);
-
-            while (Reader.HasCommand)
+            if(Deserializer.CurrentRevision < 0x04000000)
             {
-                PICACommand Cmd = Reader.GetCommand();
+                ColorMask = new PICADepthColorMask();
+                BinaryReader Reader = Deserializer.Reader;
 
-                if (Cmd.Register == PICARegister.GPUREG_DEPTH_COLOR_MASK)
+                ColorMask.DepthFunc = ((GLTestFunc)Reader.ReadUInt32()).ToPICA();
+                var unk0 = Reader.ReadUInt32();
+                ColorMask.Enabled = (Flags & GfxFragOpDepthFlags.IsTestEnabled) > 0;
+                ColorMask.DepthWrite = (Flags & GfxFragOpDepthFlags.IsMaskEnabled) > 0;
+            }
+            else
+            {
+
+                PICACommandReader CmdReader = new PICACommandReader(Commands);
+
+                while (CmdReader.HasCommand)
                 {
-                    ColorMask = new PICADepthColorMask(Cmd.Parameters[0]);
+                    PICACommand Cmd = CmdReader.GetCommand();
+
+                    if (Cmd.Register == PICARegister.GPUREG_DEPTH_COLOR_MASK)
+                    {
+                        ColorMask = new PICADepthColorMask(Cmd.Parameters[0]);
+                    }
+                }
+
+                //Is this right for v5? Was it wrong before?
+                //if(Deserializer.MainFileVersion == 0x03FFFFFF)
+                {
+                    ColorMask.DepthWrite = (Flags & GfxFragOpDepthFlags.IsMaskEnabled) > 0;
                 }
             }
         }

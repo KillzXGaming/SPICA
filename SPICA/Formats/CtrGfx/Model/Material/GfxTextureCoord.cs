@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.IO;
+using System.Numerics;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SPICA.Math3D;
-
-using System.IO;
-using System.Numerics;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
-    public struct GfxTextureCoord
+    public struct GfxTextureCoord : ICustomSerialization
     {
         public int SourceCoordIndex;
 
@@ -23,9 +24,11 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         public float   Rotation;
         public Vector2 Translation;
 
-        private uint Flags; //Enabled/Dirty, set by game, SBZ
+        [IfVersion(CmpOp.Greater, 0x02000000)] private uint Flags; //Enabled/Dirty, set by game, SBZ
 
-        public Matrix3x4 Transform;
+        [IfVersion(CmpOp.Greater, 0x02000000)] public Matrix3x4 Transform;
+
+        [IfVersion(CmpOp.Equal, 0x04000000)] private uint Hash;
 
         public static GfxTextureCoord Default
         {
@@ -100,6 +103,20 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
                 return MS.ToArray();
             }
+        }
+
+        public void Deserialize(BinaryDeserializer Deserializer)
+        {
+            if(Deserializer.CurrentRevision <= 0x02000000)
+            {
+                UpdateMatrix(); 
+                return;
+            }
+        }
+
+        bool ICustomSerialization.Serialize(BinarySerializer Serializer)
+        {
+            return false;
         }
     }
 }

@@ -12,14 +12,14 @@ namespace SPICA.Rendering
     {
         public Vector3 Position;
         public Vector3 Direction;
-        public Vector4  Ambient;
+        public Vector4 Ambient;
         public Vector4 Diffuse;
         public Vector4 Specular0;
         public Vector4 Specular1;
 
         public LightType Type;
 
-        public int   AngleLUTInput;
+        public int AngleLUTInput;
         public float AngleLUTScale;
 
         public float AttenuationScale;
@@ -52,18 +52,18 @@ namespace SPICA.Rendering
 
             Enabled = Light.IsEnabled;
 
-            DistAttEnabled  = (Light.Flags & H3DLightFlags.HasDistanceAttenuation) != 0;
-            TwoSidedDiffuse = (Light.Flags & H3DLightFlags.IsTwoSidedDiffuse)      != 0;
+            DistAttEnabled = (Light.Flags & H3DLightFlags.HasDistanceAttenuation) != 0;
+            TwoSidedDiffuse = (Light.Flags & H3DLightFlags.IsTwoSidedDiffuse) != 0;
 
             AngleLUTInput = (int)Light.LUTInput;
-            AngleLUTScale =      Light.LUTScale.ToSingle();
+            AngleLUTScale = Light.LUTScale.ToSingle();
 
             if (Light.Content is H3DFragmentLight FragmentLight)
             {
                 Direction = FragmentLight.Direction;
 
-                Ambient   = FragmentLight.AmbientColor.ToVector4();
-                Diffuse   = FragmentLight.DiffuseColor.ToVector4();
+                Ambient = FragmentLight.AmbientColor.ToVector4();
+                Diffuse = FragmentLight.DiffuseColor.ToVector4();
                 Specular0 = FragmentLight.Specular0Color.ToVector4();
                 Specular1 = FragmentLight.Specular1Color.ToVector4();
 
@@ -76,10 +76,10 @@ namespace SPICA.Rendering
                 AttenuationScale = 1f / AttDiff;
                 AttenuationBias = -FragmentLight.AttenuationStart / AttDiff;
 
-                AngleLUTTableName   = FragmentLight.AngleLUTTableName;
+                AngleLUTTableName = FragmentLight.AngleLUTTableName;
                 AngleLUTSamplerName = FragmentLight.AngleLUTSamplerName;
 
-                DistanceLUTTableName   = FragmentLight.DistanceLUTTableName;
+                DistanceLUTTableName = FragmentLight.DistanceLUTTableName;
                 DistanceLUTSamplerName = FragmentLight.DistanceLUTSamplerName;
 
                 Directional = Light.Type == H3DLightType.FragmentDir;

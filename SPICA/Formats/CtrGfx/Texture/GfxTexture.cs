@@ -1,13 +1,19 @@
-﻿using SPICA.PICA.Commands;
+﻿using SPICA.Formats.Common;
+using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SPICA.Formats.CtrGfx.Texture
 {
     [TypeChoice(0x20000009u, typeof(GfxTextureCube))]
     [TypeChoice(0x20000011u, typeof(GfxTextureImage))]
+    [TypeChoice(0x00001104u, typeof(GfxTextureImage))]
+    [TypeChoice(0x00000884u, typeof(GfxTextureImage))]
     public class GfxTexture : GfxObject
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.TextureImage;
+
         public int Height;
         public int Width;
 
@@ -19,7 +25,7 @@ namespace SPICA.Formats.CtrGfx.Texture
         internal uint TextureObj;
         internal uint LocationFlag;
 
-        public PICATextureFormat HwFormat;
+        [IfVersion(CmpOp.Greater, 0x03000000, true)] public PICATextureFormat HwFormat;
 
         public GfxTexture()
         {
