@@ -4,12 +4,16 @@ using SPICA.Serialization.Attributes;
 namespace SPICA.Formats.CtrGfx.LUT
 {
     [TypeChoice(0x04000000u, typeof(GfxLUT))]
+    [TypeChoice(0x00000020u, typeof(GfxLUT))]
     public class GfxLUT : GfxObject
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.LUT;
+
         public readonly GfxDict<GfxLUTSampler> Samplers;
 
         public GfxLUT()
         {
+            //Header.MagicNumber = 0x5354554C;
             Samplers = new GfxDict<GfxLUTSampler>();
         }
 

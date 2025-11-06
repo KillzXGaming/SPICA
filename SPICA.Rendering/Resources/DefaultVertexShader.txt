@@ -664,6 +664,13 @@ float BoneWeightDisplay(ivec4 index)
     return weight;
 }
 
+vec4 CalcQuatFromNormal(vec3 normal) {
+    float QuatZ = 0.5 * (normal.z + 1.0);
+    if (QuatZ <= 0.0) return vec4(1.0, 0.0, 0.0, 0.0);
+    QuatZ = inversesqrt(QuatZ);
+    return vec4((0.5 * normal.xy).xy * QuatZ, (1.0 / QuatZ), 0.0);
+}
+
 void main() {
 	proc_transform_matrix();
 	proc_calc_color();
@@ -671,6 +678,7 @@ void main() {
 	proc_calc_texcoord1();
 	proc_calc_texcoord2();
 	gl_Position = Position;
+	QuatNormal = CalcQuatFromNormal(reg_temp[14].xyz);
 
     float totalWeight = BoneWeightDisplay(ivec4(aBoneIndex));
 }

@@ -107,6 +107,12 @@ namespace SPICA.Formats.CtrGfx.Animation
                 curve.EndFrame = Deserializer.Reader.ReadSingle();
 
                 uint FormatFlags = Deserializer.Reader.ReadUInt32();
+
+                if((FormatFlags & 1) != 0)
+                {
+                    return;
+                }
+
                 int KeysCount = Deserializer.Reader.ReadInt32();
                 float InvDuration = Deserializer.Reader.ReadSingle();
 

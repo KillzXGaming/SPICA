@@ -61,7 +61,7 @@ namespace SPICA.Formats.CtrH3D.Animation
         public void Deserialize(BinaryDeserializer Deserializer)
         {
             //element enum adds hemi light keying after ver 0x21, shift enum accordingly
-            if (Deserializer.FileVersion <= 0x21)
+            if (Deserializer.CurrentRevision <= 0x21)
             {
                 //Skip over newly added types
                 if (TargetType >= H3DTargetType.LightGround)              TargetType += 1;
@@ -73,7 +73,7 @@ namespace SPICA.Formats.CtrH3D.Animation
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
             //element enum adds hemi light keying after ver 0x21, shift enum accordingly
-            if (Serializer.FileVersion <= 0x21)
+            if (Serializer.CurrentRevision <= 0x21)
             {
                 //Skip over newly added types
                 if (TargetType >= H3DTargetType.LightGround)              TargetType -= 1;

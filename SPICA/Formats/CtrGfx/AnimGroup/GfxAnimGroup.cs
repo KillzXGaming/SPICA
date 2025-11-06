@@ -4,6 +4,7 @@ using SPICA.Serialization.Attributes;
 namespace SPICA.Formats.CtrGfx.AnimGroup
 {
     [TypeChoice(0x80000000u, typeof(GfxAnimGroup))]
+    [TypeChoice(0x10000000u, typeof(GfxAnimGroup))]
     public class GfxAnimGroup : INamed
     {
         private uint Flags;
@@ -27,6 +28,8 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
         public GfxAnimGroup()
         {
             Elements = new GfxDict<GfxAnimGroupElement>();
+            Name = string.Empty;
+            BlendOperationTypes = new int[0];
         }
     }
 }

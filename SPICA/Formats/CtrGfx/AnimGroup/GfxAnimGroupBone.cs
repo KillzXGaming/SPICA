@@ -1,4 +1,6 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.AnimGroup
 {
@@ -12,7 +14,7 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
             set => _BoneName = value ?? throw Exceptions.GetNullException("BoneName");
         }
 
-        private GfxAnimGroupObjType ObjType2;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private GfxAnimGroupObjType ObjType2;
 
         public GfxAnimGroupBone()
         {

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using SPICA.Formats.Common;
 using SPICA.Math3D;
 using SPICA.PICA;
 using SPICA.PICA.Commands;
@@ -9,15 +10,19 @@ using SPICA.Serialization.Attributes;
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
     [TypeChoice(0x80000000u, typeof(GfxTextureMapper))]
+    [TypeChoice(0x00000001u, typeof(GfxTextureMapper))]
     public class GfxTextureMapper : ICustomSerialization
     {
+        [IfVersion(CmpOp.Greater, 0x3000000)]
         private uint DynamicAlloc;
 
         public   GfxTextureReference Texture;
         internal GfxTextureSampler   Sampler;
 
-        [Inline, FixedLength(14)] private uint[] Commands;
+        [Inline, FixedLength(14), IfVersion(CmpOp.Greater, 0x3000000)] 
+        private uint[] Commands;
 
+        [IfVersion(CmpOp.Greater, 0x3000000)]
         private int CommandsLength;
 
         [Ignore] public RGBA BorderColor;
@@ -39,7 +44,6 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         [Ignore] internal int MapperIndex;
 
-
         public GfxTextureMapper()
         {
             Texture = new GfxTextureReference();
@@ -59,6 +63,31 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
+            if (Sampler is GfxTextureSamplerOld)
+            {
+                var sampler = (GfxTextureSamplerOld)Sampler;
+
+                WrapU = sampler.WrapS.ToPICA();
+                WrapV = sampler.WrapT.ToPICA();
+                MipFilter = sampler.MinFilter.GetPICAMipFilter();
+                MinFilter = sampler.MinFilter.GetPICAMinFilter();
+                MagFilter = sampler.MagFilter.ToPICA();
+                MinLOD = (byte)(sampler.MinLod / 255);
+                LODBias = sampler.LodBias;
+                BorderColor = sampler.BorderColor;
+
+                //M-1: Hack so we don't save GfxTextureSamplerOld struct
+                Sampler = new GfxTextureSamplerStd() { 
+                    MinFilter = GetMinFilter(),
+                    BorderColor = sampler.BorderColorF,
+                    LODBias = LODBias,
+                };
+            }
+
+
+            if (CommandsLength == 0)
+                return;
+
             PICACommandReader Reader = new PICACommandReader(Commands);
 
             int Index = 0;
@@ -100,6 +129,9 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
+            //(M-1)TODO: Min filter is being saved wrong.
+            //LinearMipmapNearest is being saved as LinearMipmapLinear
+
             PICARegister[] Cmd0 = new PICARegister[]
             {
                 PICARegister.GPUREG_TEXUNIT0_TYPE,
@@ -147,6 +179,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
             CommandsLength = Commands.Length * 4;
 
+            //(M-1)TODO: Fix saving
             //TODO: Don't assume it uses the Standard sampler, could be the Shadow sampler too
             GfxTextureSamplerStd Samp = (GfxTextureSamplerStd)Sampler;
 

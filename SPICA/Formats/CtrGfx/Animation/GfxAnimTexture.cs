@@ -39,7 +39,7 @@ namespace SPICA.Formats.CtrGfx.Animation
             Deserializer.BaseStream.Seek(Deserializer.ReadPointer(), System.IO.SeekOrigin.Begin);
 
             long pos = Deserializer.BaseStream.Position;
-            var version = Deserializer.FileVersion;
+            var version = Deserializer.CurrentRevision;
 
             TextureList = new GfxTextureReference[numTextures];
             for (int i = 0; i < numTextures; i++)
@@ -50,7 +50,7 @@ namespace SPICA.Formats.CtrGfx.Animation
             }
 
             //Seek back
-            Deserializer.FileVersion = version;
+            //Deserializer.FileVersion = version;
             Deserializer.BaseStream.Seek(Position + 4, SeekOrigin.Begin);
         }
 

@@ -8,7 +8,7 @@ namespace SPICA.Formats.CtrGfx.Emitter
     {
         public string Name
         {
-            get => throw new NotImplementedException();
+            get => "";
             set => throw new NotImplementedException();
         }
     }

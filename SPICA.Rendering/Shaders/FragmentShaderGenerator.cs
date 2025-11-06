@@ -9,6 +9,7 @@ using System.Text;
 
 namespace SPICA.Rendering.Shaders
 {
+    //(M-1)TODO: More accurate to hardware and rewrite vertex shader
     class FragmentShaderGenerator
     {
         public const string EmissionUniform = "u_EmissionColor";
@@ -29,7 +30,7 @@ namespace SPICA.Rendering.Shaders
         public const string CombBufferUniform = "u_CombBufferColor";
         public const string PickingMode = "u_IsPicking";
         public const string PickingColor = "PickingColor";
-        
+
         private StringBuilder SB;
 
         private H3DMaterialParams Params;
@@ -325,6 +326,21 @@ namespace SPICA.Rendering.Shaders
             return SB.ToString();
         }
 
+        private bool IsLUTSupported(uint lutType)
+        {
+            var config = Params.TranslucencyKind;
+            switch (lutType)
+            {
+                case 0: return config != H3DTranslucencyKind.LayerConfig1;
+                case 1: return config != H3DTranslucencyKind.LayerConfig0 && config != H3DTranslucencyKind.LayerConfig1 && config != H3DTranslucencyKind.LayerConfig5;
+                case 2: return config != H3DTranslucencyKind.LayerConfig0 && config != H3DTranslucencyKind.LayerConfig2 && config != H3DTranslucencyKind.LayerConfig4;
+                case 3: return config != H3DTranslucencyKind.LayerConfig3;
+                case 4:
+                case 5: return config == H3DTranslucencyKind.LayerConfig4 || config == H3DTranslucencyKind.LayerConfig5 || config >= H3DTranslucencyKind.LayerConfig7;
+                default: return true;
+            }
+        }
+
         private void GenFragColors()
         {
             //See Model and Mesh class for the LUT mappings
@@ -334,6 +350,22 @@ namespace SPICA.Rendering.Shaders
             string ReflecR = GetLUTInput(Params.LUTInputSelection.ReflecR, Params.LUTInputScale.ReflecR, 3);
             string ReflecG = GetLUTInput(Params.LUTInputSelection.ReflecG, Params.LUTInputScale.ReflecG, 4);
             string ReflecB = GetLUTInput(Params.LUTInputSelection.ReflecB, Params.LUTInputScale.ReflecB, 5);
+
+            if ((Params.FragmentFlags & H3DFragmentFlags.IsLUTReflectionEnabled) > 0)
+            {
+                if (!IsLUTSupported(3) || Params.LUTReflecRSamplerName == null)
+                {
+                    ReflecR = "1.0";
+                }
+                if (!IsLUTSupported(4)) ReflecG = ReflecR;
+                if (!IsLUTSupported(5)) ReflecB = ReflecR;
+            }
+            else
+            {
+                ReflecR = "1.0";
+                ReflecG = "1.0";
+                ReflecB = "1.0";
+            }
 
             string Color = $"{EmissionUniform} + {AmbientUniform} * SAmbient";
 

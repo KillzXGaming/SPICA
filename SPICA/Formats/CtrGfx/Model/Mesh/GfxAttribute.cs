@@ -1,10 +1,25 @@
-﻿using SPICA.PICA.Commands;
-
-using System.IO;
+﻿using System.IO;
 using System.Numerics;
+using SPICA.PICA.Commands;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model.Mesh
 {
+    public class GfxAttributeOld : GfxVertexBuffer
+    {
+        public GfxGLDataType Format;
+
+        public int Elements;
+
+        public float Scale;
+
+        public byte[] RawBuffer;
+
+        private uint BufferObj;
+        private uint LocationFlag;
+    }
+
     public class GfxAttribute : GfxVertexBuffer
     {
         private uint BufferObj;

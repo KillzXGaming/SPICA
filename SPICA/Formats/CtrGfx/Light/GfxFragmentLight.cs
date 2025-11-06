@@ -1,6 +1,7 @@
-﻿using SPICA.Math3D;
-
-using System.Numerics;
+﻿using System.Numerics;
+using SPICA.Math3D;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Light
 {
@@ -8,10 +9,10 @@ namespace SPICA.Formats.CtrGfx.Light
     {
         public GfxLightType Type;
 
-        private Vector4 AmbientColorF;
-        private Vector4 DiffuseColorF;
-        private Vector4 Specular0ColorF;
-        private Vector4 Specular1ColorF;
+        public Vector4 AmbientColorF;
+        public Vector4 DiffuseColorF;
+        public Vector4 Specular0ColorF;
+        public Vector4 Specular1ColorF;
 
         public RGBA AmbientColor;
         public RGBA DiffuseColor;
@@ -20,16 +21,14 @@ namespace SPICA.Formats.CtrGfx.Light
 
         public Vector3 Direction;
 
-        public GfxLUTReference DistanceSampler;
-        public GfxFragLightLUT AngleSampler;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public GfxLUTReference DistanceSampler;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public GfxFragLightLUT AngleSampler;
 
         public float AttenuationStart;
         public float AttenuationEnd;
 
-        private uint InvAttScaleF20;
-        private uint AttBiasF20;
-
-        private bool IsDirty;
+        public uint InvAttScaleF20;
+        public uint AttBiasF20;
 
         public GfxFragmentLightFlags Flags;
     }

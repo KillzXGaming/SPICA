@@ -1,7 +1,4 @@
-﻿using SPICA.Math3D;
-using SPICA.Serialization.Attributes;
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +7,12 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using SPICA.Formats.CtrGfx;
+using SPICA.Formats.CtrGfx.Model;
+using SPICA.Math3D;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Serialization
 {
@@ -197,7 +200,9 @@ namespace SPICA.Serialization
 
         private object ReadObject(Type ObjectType, bool IsRef = false)
         {
+
             long Position = BaseStream.Position;
+            bool IsParticleModel = false;
 
             if (ObjectType.IsDefined(typeof(TypeChoiceAttribute)))
             {
@@ -205,7 +210,14 @@ namespace SPICA.Serialization
 
                 Type Type = GetMatchingType(ObjectType, TypeId);
 
-                if (Type != null)
+                if (ObjectType == typeof(GfxModel) && TypeId == 0x00081202)
+                {
+                    //M-1: HACK! Skip particle models so we can still render the base model
+                    IsParticleModel = true;
+
+                    return null;
+                }
+                else if (Type != null)
                 {
                     ObjectType = Type;
                 }
@@ -231,7 +243,19 @@ namespace SPICA.Serialization
             {
                 FieldsCount++;
 
-                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(FileVersion) ?? false) continue;
+                //var IfVerAtb = Info.GetCustomAttribute<IfVersionAttribute>();
+
+                //if (IfVerAtb != null)
+                //{
+                //    // M-1: HACK! Some early steel diver have a different mesh section.
+                //    // Thankfully the model revision was updated....
+                //    if(IfVerAtb.ComparePrevSection && RevisionStack.Count > 1)
+                //    {
+                //        if (!IfVerAtb.Compare(RevisionStack.Skip(1).First(), MainFileVersion)) continue;
+                //    }
+                //    else if(!IfVerAtb.Compare(CurrentRevision, MainFileVersion)) continue;
+                //}
+                if (!Info.GetCustomAttribute<IfVersionAttribute>()?.Compare(CurrentRevision, MainFileVersion) ?? false) continue;
 
                 if (!(
                     Info.IsDefined(typeof(IgnoreAttribute)) ||
@@ -265,7 +289,7 @@ namespace SPICA.Serialization
 
                         if (Type.IsPrimitive && Info.IsDefined(typeof(VersionAttribute)))
                         {
-                            FileVersion = Convert.ToInt32(FieldValue);
+                            RevisionStack.Push(Convert.ToUInt32(FieldValue));
                         }
                     }
                     else
@@ -274,6 +298,7 @@ namespace SPICA.Serialization
                     }
 
                     if (FieldValue != null) Info.SetValue(Value, FieldValue);
+
 
                     Align(Info.GetCustomAttribute<PaddingAttribute>()?.Size ?? 1);
                 }
@@ -285,6 +310,12 @@ namespace SPICA.Serialization
             }
 
             if (Value is ICustomSerialization) ((ICustomSerialization)Value).Deserialize(this);
+
+            //M-1: UGH! Stupid hack to handle per-object revisions
+            if (typeof(GfxObject).IsAssignableFrom(ObjectType))
+            {
+                RevisionStack.Pop();
+            }
 
             return Value;
         }
@@ -304,26 +335,59 @@ namespace SPICA.Serialization
 
         private object ReadReference(Type Type, FieldInfo Info = null)
         {
+            bool isOldListFormat = MainFileVersion <= 0x03000000 && IsList(Type);
+
+            object Value = null;
             uint Address;
             int  Length;
 
-            if (GetLengthPos(Info) == LengthPos.AfterPtr)
+            //M-1: I have no idea why this did this in the first place....
+            if (isOldListFormat)
             {
-                Address = ReadPointer();
-                Length  = ReadLength(Type, Info);
+                Address = 0;
+                Length = 0;
+
+                if (!Objects.TryGetValue(Address, out Value))
+                {
+                    long Position = BaseStream.Position;
+
+                    Address = ReadPointer();
+
+                    BaseStream.Seek(Address, SeekOrigin.Begin);
+                    Length = Reader.ReadInt32();
+
+                    if (Address != 0)
+                    {
+                        BaseStream.Seek(Address + 4, SeekOrigin.Begin);
+
+                        Value = ReadList(Type, false, Length);
+                    }
+
+                    BaseStream.Seek(Position + 4, SeekOrigin.Begin);
+                }
+
+
+                return Value;
             }
             else
             {
-                Length  = ReadLength(Type, Info);
-                Address = ReadPointer();
+                if (GetLengthPos(Info) == LengthPos.AfterPtr)
+                {
+                    Address = ReadPointer();
+                    Length = ReadLength(Type, Info);
+                }
+                else
+                {
+                    Length = ReadLength(Type, Info);
+                    Address = ReadPointer();
+                }
+
             }
 
-            bool Range  = Info?.IsDefined(typeof(RangeAttribute))         ?? false;
+            bool Range  = Info?.IsDefined(typeof(RangeAttribute)) ?? false;
             bool Repeat = Info?.IsDefined(typeof(RepeatPointerAttribute)) ?? false;
 
             if (Repeat) BaseStream.Seek(4, SeekOrigin.Current);
-
-            object Value = null;
 
             if (Address != 0 && (!IsList(Type) || (IsList(Type) && Length > 0)))
             {

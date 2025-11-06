@@ -43,19 +43,30 @@ namespace SPICA.Formats.CtrGfx
 
         public readonly GfxDict<GfxModel>     Models;
         public readonly GfxDict<GfxTexture>   Textures;
+
+        [IfVersion(CmpOp.Greater, 0x02000000, true)]
         public readonly GfxDict<GfxLUT>       LUTs;
         public readonly GfxDict<GfxMaterial>  Materials;
         public readonly GfxDict<GfxShader>    Shaders;
         public readonly GfxDict<GfxCamera>    Cameras;
         public readonly GfxDict<GfxLight>     Lights;
+
+        [IfVersion(CmpOp.Gequal,  0x04000000, true)]
         public readonly GfxDict<GfxFog>       Fogs;
         public readonly GfxDict<GfxScene>     Scenes;
         public readonly GfxDict<GfxAnimation> SkeletalAnimations;
         public readonly GfxDict<GfxAnimation> MaterialAnimations;
+
+        [IfVersion(CmpOp.Greater, 0x02000000, true)]
         public readonly GfxDict<GfxAnimation> VisibilityAnimations;
+
+        [IfVersion(CmpOp.Gequal,  0x04000000, true)]
         public readonly GfxDict<GfxAnimation> CameraAnimations;
+        [IfVersion(CmpOp.Gequal,  0x04000000, true)]
         public readonly GfxDict<GfxAnimation> LightAnimations;
+        [IfVersion(CmpOp.Greater, 0x04000000, true)]
         public readonly GfxDict<GfxAnimation> FogAnimations;
+        [IfVersion(CmpOp.Greater, 0x03000000, true)]
         public readonly GfxDict<GfxEmitter>   Emitters;
 
         public Gfx()
@@ -117,8 +128,17 @@ namespace SPICA.Formats.CtrGfx
         {
             H3D Output = new H3D();
 
-            foreach (GfxModel Model in Models)
-                Output.Models.Add(Model.ToH3D());
+            foreach (GfxModel Model in Models.ToList())
+            {
+                if(Model != null)
+                {
+                    Output.Models.Add(Model.ToH3D());
+                }
+                else
+                {
+                    Models.Remove(Model);
+                }
+            }
 
             foreach (GfxTexture Texture in Textures)
             {
@@ -219,10 +239,18 @@ namespace SPICA.Formats.CtrGfx
 
         public static void Save(Stream FS, Gfx Scene)
         {
+            if(Scene.Emitters.Count > 0)
+            {
+                Scene.Emitters.Clear();
+            }
+
             GfxHeader Header = new GfxHeader();
             Header.Revision = Scene.Revision;
 
             BinarySerializer Serializer = new BinarySerializer(FS, GetSerializationOptions(), true);
+
+            Serializer.RevisionStack.Clear();
+            Serializer.MainFileVersion = Header.Revision;
 
             Section Contents = Serializer.Sections[(uint)H3DSectionId.Contents];
 
@@ -236,7 +264,7 @@ namespace SPICA.Formats.CtrGfx
             Serializer.AddSection((uint)GfxSectionId.Strings, Strings, typeof(GfxStringUtf8));
             Serializer.AddSection((uint)GfxSectionId.Strings, Strings, typeof(GfxStringUtf16LE));
             Serializer.AddSection((uint)GfxSectionId.Strings, Strings, typeof(GfxStringUtf16BE));
-            Serializer.AddSection((uint)GfxSectionId.Image, Image);
+            Serializer.AddSection((uint)GfxSectionId.Image,   Image);
 
             Serializer.Serialize(Scene);
 

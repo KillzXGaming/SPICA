@@ -1,4 +1,5 @@
 ﻿using SPICA.Formats.CtrH3D.Light;
+using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Light
@@ -7,15 +8,19 @@ namespace SPICA.Formats.CtrGfx.Light
     [TypeChoice(0x40000122, typeof(GfxHemisphereLight))]
     [TypeChoice(0x40000222, typeof(GfxVertexLight))]
     [TypeChoice(0x40000422, typeof(GfxAmbientLight))]
+    // Old versions
+    [TypeChoice(0x00002202, typeof(GfxFragmentLight))]
+    [TypeChoice(0x00010202, typeof(GfxAmbientLight))]
     public class GfxLight : GfxNodeTransform
     {
-        public bool IsEnabled;
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Light;
+        [IfVersion(CmpOp.Greater, 0x04000000)] public bool IsEnabled;
 
         public GfxLight()
         {
             this.Header.MagicNumber = 0x544C4643; // CFLT
-            this.Header.Revision = 117506048;
             this.IsBranchVisible = true;
+            this.IsEnabled = true;
         }
 
         public H3DLight ToH3DLight()
@@ -134,13 +139,24 @@ namespace SPICA.Formats.CtrGfx.Light
             {
                 gfxlight = new GfxFragmentLight()
                 {
+                    AmbientColorF = FragmentLight.AmbientColor.ToVector4(),
                     AmbientColor = FragmentLight.AmbientColor,
+
+                    DiffuseColorF = FragmentLight.DiffuseColor.ToVector4(),
                     DiffuseColor = FragmentLight.DiffuseColor,
+
                     Specular0Color = FragmentLight.Specular0Color,
+                    Specular0ColorF = FragmentLight.Specular0Color.ToVector4(),
+
                     Specular1Color = FragmentLight.Specular1Color,
+                    Specular1ColorF = FragmentLight.Specular1Color.ToVector4(),
+
                     Direction = FragmentLight.Direction,
                     AttenuationStart = FragmentLight.AttenuationStart,
                     AttenuationEnd = FragmentLight.AttenuationEnd,
+                    InvAttScaleF20 = 0x0003F000,
+                    AttBiasF20 = 0x00080000,
+                    Flags = GfxFragmentLightFlags.IsDirty,
                 };
 
                 if (!string.IsNullOrEmpty(FragmentLight.DistanceLUTSamplerName))
@@ -164,6 +180,7 @@ namespace SPICA.Formats.CtrGfx.Light
                         },
                     };
                 }
+
                 if (light.Flags.HasFlag(H3DLightFlags.HasDistanceAttenuation))
                     ((GfxFragmentLight)gfxlight).Flags |= GfxFragmentLightFlags.IsDistanceAttenuationEnabled;
                 if (light.Flags.HasFlag(H3DLightFlags.IsTwoSidedDiffuse))

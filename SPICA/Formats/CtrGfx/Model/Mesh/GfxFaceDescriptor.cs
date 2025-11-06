@@ -1,4 +1,5 @@
-﻿using SPICA.Math3D;
+﻿using SPICA.Formats.Common;
+using SPICA.Math3D;
 using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
@@ -25,13 +26,14 @@ namespace SPICA.Formats.CtrGfx.Model.Mesh
         private uint BufferObj;
         private uint LocationFlag;
 
-        private uint CommandCachePtr;
-        private uint CommandCacheLength;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private uint CommandCachePtr;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private uint CommandCacheLength;
 
-        private uint LocationPtr;
-        private uint MemoryArea;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private uint LocationPtr;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private uint MemoryArea;
 
-        public uint BoundingVolume;
+        [IfVersion(CmpOp.Less,   0x04000000, true)] private uint Unk;
+        [IfVersion(CmpOp.Gequal, 0x05000000, true)] public uint BoundingVolume;
 
         [Ignore] public ushort[] Indices;
 

@@ -1,6 +1,8 @@
 ﻿using System.IO;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
@@ -9,7 +11,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
         public GfxFragmentFlags Flags;
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public GfxTranslucencyKind TranslucencyKind;
+        public GfxLayerConfig LayerConfig;
 
         [JsonConverter(typeof(StringEnumConverter))]
         public GfxFresnelSelector FresnelSelector;
@@ -21,6 +23,8 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         public bool IsBumpRenormalize;
 
+        [IfVersion(CmpOp.Equal, 0x03FFFFFF, true)] private uint HashMaybe;
+
         internal byte[] GetBytes()
         {
             using (MemoryStream MS = new MemoryStream())
@@ -28,7 +32,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
                 BinaryWriter Writer = new BinaryWriter(MS);
 
                 Writer.Write((uint)Flags);
-                Writer.Write((uint)TranslucencyKind);
+                Writer.Write((uint)LayerConfig);
                 Writer.Write((uint)FresnelSelector);
                 Writer.Write(BumpTexture);
                 Writer.Write((uint)BumpMode);
@@ -40,7 +44,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         public override string ToString()
         {
-            return $"{Flags} {TranslucencyKind} {FresnelSelector} {BumpTexture} {BumpMode} {IsBumpRenormalize}";
+            return $"{Flags} {LayerConfig} {FresnelSelector} {BumpTexture} {BumpMode} {IsBumpRenormalize}";
         }
     }
 }

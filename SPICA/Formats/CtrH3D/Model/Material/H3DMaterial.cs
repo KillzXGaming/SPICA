@@ -380,7 +380,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
             TexUnitConfig |= (EnabledTextures[3] ? 1u : 0u) << 10;
 
 
-            if (Serializer.FileVersion >= 34)
+            if (Serializer.CurrentRevision >= 34)
             {
                 Writer.SetCommands(PICARegister.GPUREG_TEXUNIT_CONFIG, false, 0, 0, 0, 0);
                 Writer.SetCommand(PICARegister.GPUREG_TEXUNIT_CONFIG, TexUnitConfig);
@@ -424,7 +424,7 @@ namespace SPICA.Formats.CtrH3D.Model.Material
 
             TextureCommands = Writer.GetBuffer();
 
-            if (Serializer.FileVersion < 0x21 && TextureMappersCompat == null)
+            if (Serializer.CurrentRevision < 0x21 && TextureMappersCompat == null)
             {
                 TextureMappersCompat = new H3DTextureMapper[3];
             }

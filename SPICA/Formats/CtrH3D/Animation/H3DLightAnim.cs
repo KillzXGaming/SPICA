@@ -42,7 +42,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 
         bool ICustomSerialization.Serialize(BinarySerializer Serializer)
         {
-            if (Serializer.FileVersion > 0x21)
+            if (Serializer.CurrentRevision > 0x21)
                 ElementIndicesV2 = CalculateElementIndicesV2();
             else
                 ElementIndicesV1 = CalculateElementIndicesV1();

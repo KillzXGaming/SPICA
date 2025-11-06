@@ -1,15 +1,16 @@
-﻿using SPICA.PICA;
+﻿using System.IO;
+using SPICA.Formats.Common;
+using SPICA.PICA;
 using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
-
-using System.IO;
 
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
     public struct GfxFragOpStencil : ICustomSerialization
     {
-        [Inline, FixedLength(4)] private uint[] Commands;
+        //TODO: Fix
+        [Inline, FixedLength(4), IfVersion(CmpOp.Greater, 0x04000000)] private uint[] Commands;
 
         [Ignore] public PICAStencilTest Test;
 
@@ -17,11 +18,43 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
-            PICACommandReader Reader = new PICACommandReader(Commands);
-
-            while (Reader.HasCommand)
+            //M-1: Are one of these BufferMask?
+            if (Deserializer.CurrentRevision < 0x05000000)
             {
-                PICACommand Cmd = Reader.GetCommand();
+                Test = new PICAStencilTest();
+                Operation = new PICAStencilOperation();
+                Commands = new uint[4];
+
+                BinaryReader Reader = Deserializer.Reader;
+
+                uint Unk0 = Reader.ReadUInt32();
+                Test.Enabled = Reader.ReadUInt32() != 0;
+                Test.Function = ((GLTestFunc)Reader.ReadUInt32()).ToPICA();
+                Test.Reference = (byte)(Reader.ReadSingle() * byte.MaxValue);
+                Test.Mask = (byte)Reader.ReadUInt32();
+
+                Operation.FailOp = ((GLStencilOp)Reader.ReadUInt32()).ToPICA();
+                Operation.ZFailOp = ((GLStencilOp)Reader.ReadUInt32()).ToPICA();
+                Operation.ZPassOp = ((GLStencilOp)Reader.ReadUInt32()).ToPICA();
+
+                if(Deserializer.CurrentRevision > 0x03000000)
+                {
+                    var hashMaybeA = Reader.ReadUInt32();
+
+                    for (int i = 0; i < Commands.Length; i++)
+                    {
+                        Commands[i] = Reader.ReadUInt32();
+                    }
+
+                    var hashMaybeB = Reader.ReadUInt32();
+                }
+            }
+
+            PICACommandReader CmdReader = new PICACommandReader(Commands);
+
+            while (CmdReader.HasCommand)
+            {
+                PICACommand Cmd = CmdReader.GetCommand();
 
                 uint Param = Cmd.Parameters[0];
 

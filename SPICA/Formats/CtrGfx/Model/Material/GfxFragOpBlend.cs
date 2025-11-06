@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Drawing.Imaging;
+using System.Numerics;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using SPICA.Formats.Common;
 using SPICA.Math3D;
 using SPICA.PICA;
 using SPICA.PICA.Commands;
 using SPICA.Serialization;
 using SPICA.Serialization.Attributes;
-
-using System;
-using System.Numerics;
 
 namespace SPICA.Formats.CtrGfx.Model.Material
 {
@@ -18,7 +19,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         private Vector4 ColorF;
 
-        [Inline, FixedLength(6)] private uint[] Commands;
+        [Inline, FixedLength(6), IfVersion(CmpOp.Greater, 0x03000000)] private uint[] Commands;
 
         [Ignore] public PICAColorOperation ColorOperation;
 
@@ -30,23 +31,46 @@ namespace SPICA.Formats.CtrGfx.Model.Material
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
-            PICACommandReader Reader = new PICACommandReader(Commands);
-
-            while (Reader.HasCommand)
+            if (Deserializer.CurrentRevision < 0x04000000)
             {
-                PICACommand Cmd = Reader.GetCommand();
+                ColorOperation = new PICAColorOperation();
+                Function = new PICABlendFunction();
+                Color = RGBA.FromFloat(ColorF);
 
-                uint Param = Cmd.Parameters[0];
+                BinaryReader Reader = Deserializer.Reader;
 
-                switch (Cmd.Register)
+                LogicalOperation = ((GLLogicOp)Reader.ReadUInt32()).ToPICA();
+                Function.ColorSrcFunc = ((GLBlendFunc)Reader.ReadUInt32()).ToPICA();
+                Function.ColorDstFunc = ((GLBlendFunc)Reader.ReadUInt32()).ToPICA();
+                Function.ColorEquation = ((GLBlendEquation)Reader.ReadUInt32()).ToPICA();
+                Function.AlphaSrcFunc = ((GLBlendFunc)Reader.ReadUInt32()).ToPICA();
+                Function.AlphaDstFunc = ((GLBlendFunc)Reader.ReadUInt32()).ToPICA();
+                Function.AlphaEquation = ((GLBlendEquation)Reader.ReadUInt32()).ToPICA();
+
+                ColorOperation.BlendMode = Mode == GfxFragOpBlendMode.LogicalOp ? PICABlendMode.LogicalOp : PICABlendMode.Blend;
+            }
+            else
+            {
+
+
+                PICACommandReader CmdReader = new PICACommandReader(Commands);
+
+                while (CmdReader.HasCommand)
                 {
-                    case PICARegister.GPUREG_COLOR_OPERATION: ColorOperation = new PICAColorOperation(Param); break;
+                    PICACommand Cmd = CmdReader.GetCommand();
 
-                    case PICARegister.GPUREG_BLEND_FUNC: Function = new PICABlendFunction(Param); break;
+                    uint Param = Cmd.Parameters[0];
 
-                    case PICARegister.GPUREG_LOGIC_OP: LogicalOperation = (PICALogicalOp)(Param & 0xf); break;
+                    switch (Cmd.Register)
+                    {
+                        case PICARegister.GPUREG_COLOR_OPERATION: ColorOperation = new PICAColorOperation(Param); break;
 
-                    case PICARegister.GPUREG_BLEND_COLOR: Color = new RGBA(Param); break;
+                        case PICARegister.GPUREG_BLEND_FUNC: Function = new PICABlendFunction(Param); break;
+
+                        case PICARegister.GPUREG_LOGIC_OP: LogicalOperation = (PICALogicalOp)(Param & 0xf); break;
+
+                        case PICARegister.GPUREG_BLEND_COLOR: Color = new RGBA(Param); break;
+                    }
                 }
             }
         }

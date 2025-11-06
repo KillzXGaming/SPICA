@@ -8,6 +8,8 @@ namespace SPICA.Formats.CtrGfx.Shader
     [TypeChoice(0x80000002u, typeof(GfxShader))]
     public class GfxShader : GfxObject
     {
+        public override GfxObjRevisionsV5 Revision => GfxObjRevisionsV5.Shader;
+
         public byte[] ShaderData;
 
         public uint[] CommandsA;

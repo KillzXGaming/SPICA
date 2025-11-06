@@ -33,7 +33,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
-            if (Deserializer.FileVersion <= 0x20)
+            if (Deserializer.CurrentRevision <= 0x20)
             {
                 /*
                  * Older version have a pointer within the curve data,
@@ -130,7 +130,7 @@ namespace SPICA.Formats.CtrH3D.Animation
 
             Serializer.Writer.Write(CurveIndex);
 
-            if (Serializer.FileVersion < 0x20)
+            if (Serializer.CurrentRevision < 0x20)
             {
                 Serializer.WritePointer((uint)Serializer.BaseStream.Position + 8);
                 Serializer.Writer.Write(1);

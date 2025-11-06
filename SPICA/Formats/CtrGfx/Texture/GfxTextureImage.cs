@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using SPICA.Formats.Common;
 using SPICA.Math3D;
 using SPICA.PICA.Commands;
 using SPICA.Serialization;
@@ -18,6 +19,11 @@ namespace SPICA.Formats.CtrGfx.Texture
 
             Deserializer.BaseStream.Seek(Deserializer.ReadPointer(), SeekOrigin.Begin);
             Image = Deserializer.Deserialize<GfxTextureImageData>();
+
+            if (Deserializer.MainFileVersion < 0x04000000)
+            {
+                HwFormat = ((GLTexFormat)((GLType << 16) | GLFormat)).ToPICA();
+            }
 
             Deserializer.BaseStream.Seek(pos, SeekOrigin.Begin);
         }

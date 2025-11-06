@@ -1,4 +1,6 @@
 ﻿using SPICA.Formats.Common;
+using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
 
 namespace SPICA.Formats.CtrGfx.AnimGroup
 {
@@ -14,7 +16,7 @@ namespace SPICA.Formats.CtrGfx.AnimGroup
 
         public int TexMapperIndex;
 
-        private GfxAnimGroupObjType ObjType2;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private GfxAnimGroupObjType ObjType2;
 
         public GfxAnimGroupTexMapper()
         {

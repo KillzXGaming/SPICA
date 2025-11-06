@@ -42,21 +42,43 @@ namespace SPICA.Formats.CtrGfx.Animation
 
         void ICustomSerialization.Deserialize(BinaryDeserializer Deserializer)
         {
-            Deserializer.BaseStream.Seek(-0xc, SeekOrigin.Current);
+            bool isOldVersion = Deserializer.CurrentRevision <= 0x02000000;
+
+            if (isOldVersion)
+            {
+                Deserializer.BaseStream.Seek(-0x14, SeekOrigin.Current);
+            }
+            else
+            {
+                Deserializer.BaseStream.Seek(-0xC, SeekOrigin.Current);
+            }
 
             var Flags = Deserializer.Reader.ReadUInt32();
-            Deserializer.Reader.ReadBytes(8);
+            Deserializer.Reader.ReadBytes(isOldVersion ? 16 : 8);
 
             uint[] Addresses = new uint[3];
+
+            int ElementCount = isOldVersion ? 2 : 3;
 
             uint ConstantMask = (uint)GfxAnimQuatTransformFlags.IsScaleConstant;
             uint NotExistMask = (uint)GfxAnimQuatTransformFlags.IsScaleInexistent;
 
-            Addresses[1] = Deserializer.ReadPointer();
-            Addresses[2] = Deserializer.ReadPointer();
-            Addresses[0] = Deserializer.ReadPointer();
+            if (isOldVersion)
+            {
+                Addresses[0] = Deserializer.ReadPointer();
+                Addresses[1] = Deserializer.ReadPointer();
 
-            for (int ElemIndex = 0; ElemIndex < 3; ElemIndex++)
+                ConstantMask = (uint)GfxAnimQuatTransformFlags.IsRotationConstant;
+                NotExistMask = (uint)GfxAnimQuatTransformFlags.IsRotationInexistent;
+            }
+            else
+            {
+                Addresses[1] = Deserializer.ReadPointer();
+                Addresses[2] = Deserializer.ReadPointer();
+                Addresses[0] = Deserializer.ReadPointer();
+            }
+
+            for (int ElemIndex = 0; ElemIndex < ElementCount; ElemIndex++)
             {
                 bool Constant = (Flags & ConstantMask) != 0;
                 bool Exists = (Flags & NotExistMask) == 0;
@@ -74,20 +96,39 @@ namespace SPICA.Formats.CtrGfx.Animation
 
                     for (int Index = 0; Index < Count; Index++)
                     {
-                        switch (ElemIndex)
+                        if(!isOldVersion)
                         {
-                            case 0:
-                                Scales.Add(Deserializer.Reader.ReadVector3());
-                                Deserializer.Reader.ReadUInt32(); //Flags to check if scale == 1
-                                break;
-                            case 1:
-                                Rotations.Add(Deserializer.Reader.ReadQuaternion());
-                                Deserializer.Reader.ReadUInt32(); //Flags to check if rotation == 0
-                                break;
-                            case 2:
-                                Translations.Add(Deserializer.Reader.ReadVector3());
-                                Deserializer.Reader.ReadUInt32(); //Flags to check if translation == 0
-                                break;
+                            switch (ElemIndex)
+                            {
+                                case 0:
+                                    Scales.Add(Deserializer.Reader.ReadVector3());
+                                    Deserializer.Reader.ReadUInt32(); //Flags to check if scale == 1
+                                    break;
+                                case 1:
+                                    Rotations.Add(Deserializer.Reader.ReadQuaternion());
+                                    Deserializer.Reader.ReadUInt32(); //Flags to check if rotation == 0
+                                    break;
+                                case 2:
+                                    Translations.Add(Deserializer.Reader.ReadVector3());
+                                    Deserializer.Reader.ReadUInt32(); //Flags to check if translation == 0
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (ElemIndex)
+                            {
+                                case 0:
+                                    var mtx = Deserializer.Reader.ReadMatrix3x4().ToMatrix4x4();
+                                    Rotations.Add(Quaternion.CreateFromRotationMatrix(mtx));
+                                    Translations.Add(mtx.Translation);
+                                    Deserializer.Reader.ReadUInt32(); //Flags to check if rotation == 0
+                                    break;
+                                case 1:
+                                    Scales.Add(Deserializer.Reader.ReadVector3());
+                                    Deserializer.Reader.ReadUInt32(); //Flags to check if scale == 1
+                                    break;
+                            }
                         }
                     }
                 }

@@ -1,10 +1,13 @@
-﻿namespace SPICA.Formats.CtrGfx.AnimGroup
+﻿using SPICA.Serialization;
+using SPICA.Serialization.Attributes;
+
+namespace SPICA.Formats.CtrGfx.AnimGroup
 {
     public class GfxAnimGroupMesh : GfxAnimGroupElement
     {
         public int MeshIndex;
 
-        private GfxAnimGroupObjType ObjType2;
+        [IfVersion(CmpOp.Gequal, 0x04000000, true)] private GfxAnimGroupObjType ObjType2;
 
         public GfxAnimGroupMesh()
         {

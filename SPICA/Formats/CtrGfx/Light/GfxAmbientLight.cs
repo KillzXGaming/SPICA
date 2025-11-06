@@ -6,7 +6,7 @@ namespace SPICA.Formats.CtrGfx.Light
 {
     public class GfxAmbientLight : GfxLight
     {
-        private Vector4 ColorF;
+        public Vector4 ColorF;
 
         public RGBA Color;
 

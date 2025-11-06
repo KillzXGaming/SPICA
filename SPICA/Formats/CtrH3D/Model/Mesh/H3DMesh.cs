@@ -421,7 +421,7 @@ namespace SPICA.Formats.CtrH3D.Model.Mesh
             Writer.SetCommand(PICARegister.GPUREG_VSH_ATTRIBUTES_PERMUTATION_HIGH, (uint)(BufferPermutation >> 32));
 
             Writer.SetCommand(PICARegister.GPUREG_ATTRIBBUFFERS_LOC, true,
-               Serializer.FileVersion <= 7 ? 0x03000000u : 0, //Base Address (Place holder)
+               Serializer.CurrentRevision <= 7 ? 0x03000000u : 0, //Base Address (Place holder)
                 (uint)(BufferFormats >>  0),
                 (uint)(BufferFormats >> 32),
                 0, //Attributes Buffer Address (Place holder)
