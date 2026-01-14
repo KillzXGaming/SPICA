@@ -15,7 +15,7 @@ namespace SPICA.Serialization
         protected SerializationOptions Options;
 
         public Stack<uint> RevisionStack = new Stack<uint>();
-        public bool IsNintendogsV3 = false;
+        public bool IsBcresNintendogsV3 = false;
         public uint CurrentRevision => RevisionStack.Count > 0 ? RevisionStack.Peek() : MainFileVersion;
         public uint MainFileVersion;
 

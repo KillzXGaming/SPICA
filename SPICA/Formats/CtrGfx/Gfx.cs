@@ -93,7 +93,7 @@ namespace SPICA.Formats.CtrGfx
         {
             using (FileStream Input = new FileStream(FileName, FileMode.Open))
             {
-                BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions());
+                BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions(), true);
 
                 GfxHeader Header = Deserializer.Deserialize<GfxHeader>();
                 Gfx       Scene  = Deserializer.Deserialize<Gfx>();
@@ -106,7 +106,7 @@ namespace SPICA.Formats.CtrGfx
 
         public static Gfx Open(Stream Input)
         {
-            BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions());
+            BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions(), true);
 
             GfxHeader Header = Deserializer.Deserialize<GfxHeader>();
             Gfx Scene = Deserializer.Deserialize<Gfx>();
@@ -116,7 +116,7 @@ namespace SPICA.Formats.CtrGfx
 
         public static H3D OpenAsH3D(Stream Input)
         {
-            BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions());
+            BinaryDeserializer Deserializer = new BinaryDeserializer(Input, GetSerializationOptions(), true);
 
             GfxHeader Header = Deserializer.Deserialize<GfxHeader>();
             Gfx       Scene  = Deserializer.Deserialize<Gfx>();

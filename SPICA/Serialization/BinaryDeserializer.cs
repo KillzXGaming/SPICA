@@ -22,13 +22,15 @@ namespace SPICA.Serialization
 
         private Dictionary<long, object> Objects;
         private Dictionary<long, object> ListObjs;
+        private bool IsCGFX = false;
 
-        public BinaryDeserializer(Stream BaseStream, SerializationOptions Options) : base(BaseStream, Options)
+        public BinaryDeserializer(Stream BaseStream, SerializationOptions Options, bool isCGFX = false) : base(BaseStream, Options)
         {
             Reader = new BinaryReader(BaseStream);
 
             Objects  = new Dictionary<long, object>();
             ListObjs = new Dictionary<long, object>();
+            IsCGFX = isCGFX;
         }
 
         public T Deserialize<T>()
@@ -342,7 +344,7 @@ namespace SPICA.Serialization
             int  Length;
 
             //M-1: I have no idea why this did this in the first place....
-            if (isOldListFormat)
+            if (IsCGFX && isOldListFormat)
             {
                 Address = 0;
                 Length = 0;
