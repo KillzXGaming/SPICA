@@ -39,7 +39,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
                     Reader.BaseStream.Seek(0x14, SeekOrigin.Current);
 
                     uint valueCheck = Reader.ReadUInt32();
-                    IsNintendogs = Deserializer.IsNintendogsV3 = !Enum.IsDefined(typeof(GLTestFunc), valueCheck);
+                    IsNintendogs = Deserializer.IsBcresNintendogsV3 = !Enum.IsDefined(typeof(GLTestFunc), valueCheck);
 
                     Reader.BaseStream.Seek(BeginPosition, SeekOrigin.Begin);
                 }

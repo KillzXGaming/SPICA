@@ -98,7 +98,7 @@ namespace SPICA.Formats.CtrGfx.Model.Material
                     texEnvStage.UpdateColorBuffer = ((GLTexCombinerSrc)Reader.ReadUInt32()) == GLTexCombinerSrc.Previous;
                     texEnvStage.UpdateAlphaBuffer = ((GLTexCombinerSrc)Reader.ReadUInt32()) == GLTexCombinerSrc.Previous;
 
-                    if (Deserializer.IsNintendogsV3)
+                    if (Deserializer.IsBcresNintendogsV3)
                     {
                         ushort SrcRgb = Reader.ReadUInt16();
                         ushort SrcAlpha = Reader.ReadUInt16();
