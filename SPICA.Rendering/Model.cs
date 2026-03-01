@@ -611,6 +611,11 @@ namespace SPICA.Rendering
                  (Max - Min).Xyz);
         }
 
+        public void UpdateAnimationSkeletonTransforms()
+        {
+            SkeletonTransforms = SkeletalAnim.GetSkeletonTransforms();
+        }
+
         public void UpdateAnimationTransforms()
         {
             if (BaseModel.Meshes.Count > 0)
