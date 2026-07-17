@@ -329,6 +329,8 @@ namespace SPICA.Formats.CtrGfx.Animation
         // But json adds this extra curve we do not want
         public class GfxFloatKeyFrameGroupConverter : JsonConverter<GfxFloatKeyFrameGroup>
         {
+            public override bool CanWrite => false;
+
             public override GfxFloatKeyFrameGroup ReadJson(JsonReader reader, Type objectType, GfxFloatKeyFrameGroup existingValue, bool hasExistingValue, JsonSerializer serializer)
             {
                 JObject obj = JObject.Load(reader);
