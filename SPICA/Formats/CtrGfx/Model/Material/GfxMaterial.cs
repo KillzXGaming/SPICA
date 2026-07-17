@@ -154,11 +154,11 @@ namespace SPICA.Formats.CtrGfx.Model.Material
             this.FragmentOperation.Depth.Flags = material.BcresDepthFlags;
 
             //BCRES 
-            this.FragmentOperation.Depth.ColorMask.RedWrite = false;
-            this.FragmentOperation.Depth.ColorMask.GreenWrite = false;
-            this.FragmentOperation.Depth.ColorMask.BlueWrite = false;
-            this.FragmentOperation.Depth.ColorMask.AlphaWrite = false;
-            this.FragmentOperation.Depth.ColorMask.DepthWrite = false;
+            this.FragmentOperation.Depth.ColorMask.RedWrite = material.MaterialParams.DepthColorMask.RedWrite;
+            this.FragmentOperation.Depth.ColorMask.GreenWrite = material.MaterialParams.DepthColorMask.GreenWrite;
+            this.FragmentOperation.Depth.ColorMask.BlueWrite = material.MaterialParams.DepthColorMask.BlueWrite;
+            this.FragmentOperation.Depth.ColorMask.AlphaWrite = material.MaterialParams.DepthColorMask.AlphaWrite;
+            this.FragmentOperation.Depth.ColorMask.DepthWrite = material.MaterialParams.DepthColorMask.DepthWrite;
 
             this.FragmentOperation.Blend.Mode = material.MaterialParams.BlendMode;
             this.FragmentOperation.Blend.ColorOperation = material.MaterialParams.ColorOperation;
@@ -667,8 +667,8 @@ namespace SPICA.Formats.CtrGfx.Model.Material
                     {
                         Enabled = true,
                         DepthFunc = PICATestFunc.Less,
-                        DepthWrite = false,
-                        RedWrite = false, BlueWrite = false, GreenWrite = false, AlphaWrite = false,
+                        DepthWrite = true,
+                        RedWrite = true, BlueWrite = true, GreenWrite = true, AlphaWrite = true,
                     },
                 },
                 Blend = new GfxFragOpBlend()
